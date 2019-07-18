@@ -1,0 +1,12 @@
+StormCommands:
+
+To list all storm topologies
+storm list
+
+storm kill <topology_name>
+sudo service supervisord stop
+
+# If you want to kill ALL processes follow this procedure on the slave nodes:
+    $ sudo supervisorctl stop storm-supervisor
+    $ sudo pkill -TERM -u storm -f 'backtype.storm.daemon.worker'
+

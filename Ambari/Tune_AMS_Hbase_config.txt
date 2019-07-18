@@ -1,0 +1,13 @@
+Tune_AMS_Hbase_config.txt
+
+3) Tune AMS configs: 
+
+**Find out the Heap available to AMS collector host. 
+>>Change these settings based on available memory: 
+_ams-hbase-env_ :: hbase_master_heapsize = 8096m (If available) 
+_ams-hbase-env_ :: hbase_master_xmn_size = 1024m 
+_ams-hbase-env_ :: regionserver_xmn_size = 1024m 
+
+4) Change the write paths for ams-hbase-site :: hbase.rootdir (Point to a less busy mount point) different from hbase.tmp.dir 
+5) Set ams-hbase-site :: phoenix.query.spoolThresholdBytes= 25165824 (24 MB from 12 MB) 
+6) Restart Collector 

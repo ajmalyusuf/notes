@@ -1,0 +1,50 @@
+MIT_Kerberos.txt
+
+Setting KRB5 configuration: 
+1) To download and install MIT Kerberos for Windows 4.0.1: 
+To download the Kerberos installer for 64-bit computers, 
+http://web.mit.edu/kerberos/dist/kfw/4.0/kfw-4.0.1-amd64.msi 
+OR 
+To download the Kerberos installer for 32-bit computers, 
+http://web.mit.edu/kerberos/dist/kfw/4.0/kfw-4.0.1-i386.msi 
+
+Note: The 64-bit installer includes both 32-bit and 64-bit libraries. 
+
+2) Open the file C:\ProgramData\MIT\Kerberos5\krb5.ini as administrator 
+(it may be a blank file) 
+
+3) Copy past the entire krb5.conf content from one of the nodes in the Linux cluster to the above "krb5.ini" file 
+
+4) Create a System Environment variable with below details: 
+Variable name : KRB5CCNAME 
+Variable value : C:\Temp\krb5cache 
+(Ensure that C:\Temp is present. krb5cache is NOT a directory; it will be a file created by MIT Kerberos. Do not create any file with this name. 
+
+5) Create a headless principal in your name in the Linux Cluster KDC, for example : 
+Perform these on the KDC server - creating a principal as "myname@REALM" by giving a password. Remember the password to use in MIT Kerberos authentication. 
+
+# kadmin.local 
+Authenticating as principal root/admin@SUPPORT.COM with password. 
+kadmin.local: addprinc myname 
+WARNING: no policy specified for myname@SUPPORT.COM; defaulting to no policy 
+Enter password for principal "myname@SUPPORT.COM": 
+Re-enter password for principal "myname@SUPPORT.COM": 
+Principal "myname@SUPPORT.COM" created. 
+kadmin.local: 
+
+6) Use this principal and password to authenticate before using Firefox. 
+
+-------------------------------- 
+Firefox Configs: 
+Got to firefox and type: "about:config" in the URL 
+
+1) Set : 
+network.negotiate-auth.trusted-uris = hdp.com 
+(domain name for example, if the hostname is n1-c03-211.hdp.com, then use "hdp.com") 
+
+2) Set: 
+network.auth.use-sspi = false 
+(the default is double click to change to false; it will be highlighted in bold) 
+
+3) Restart Firefox. 
+--------------------------------- 

@@ -1,0 +1,3 @@
+HW_recommendations.txt
+
+http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.3.2/bk_cluster-planning-guide/content/ch_hardware-recommendations_chapter.html

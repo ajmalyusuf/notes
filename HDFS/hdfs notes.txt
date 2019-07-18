@@ -1,0 +1,37 @@
+hdfs dfs 
+hdfs dfsadmin -report
+hdfs fsck
+hdfs dfsadmin -saveNamespace
+hdfs dfsadmin -safemode [enter | leave | get]
+hdfs oiv -i fsimage -o fsimage.txt
+
+Find corrupt blocks:
+hdfs fsck -list-corruptfileblocks
+
+
+Added:
+hdfs fsck / -files -blocks -locations -racks
+https://hortonworks.my.salesforce.com/500E0000006M5xpIAC?nooverride=0
+
+
+You can run below command to remove the trash and dfs space will start
+reclaimed once you removed data from hdfs
+hadoop fs -expunge 
+
+
+
+
+
+hdfs dfsadmin -metasave
+
+distcp : copy within cluster
+
+read : acl for security to overwrite permission
+
+hdfs dfs -metaSave
+
+HADOOP_ROOT_LOGGER=DEBUG,console hdfs dfs -ls /
+
+
+Deploying HTTPS in HDFS
+http://hortonworks.com/blog/deploying-https-hdfs/

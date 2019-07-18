@@ -1,0 +1,39 @@
+Postgres_notes
+
+Set up DB and users:
+> psql
+CREATE ROLE ambari;
+CREATE ROLE postgres;
+ALTER ROLE "ambari” WITH LOGIN;
+CREATE DATABASE ambari;
+ALTER DATABASE ambari OWNER TO postgres;
+GRANT ALL ON DATABASE ambari TO postgres;
+ 
+• Restore from previously done psql dump:
+[TO GET DUMP: pg_dump -U ambari ambari > ~/ambari.sql]
+psql ambari < ~/ambari.sql
+ 
+• Log into ambari db as ambari role:
+psql ambari ambari
+\d to list tables
+ 
+On Sandbox:
+ambari-agent stop
+ambari-server stop
+ 
+• Clear out old DB and create new one:
+su postgres
+>psql
+DROP DATABASE ambari;
+CREATE DATABASE ambari;
+ALTER DATABASE ambari OWNER TO postgres;
+GRANT ALL ON DATABASE ambari TO postgres;
+ 
+•Restore from previously done psql dump
+su postgres
+psql ambari < ~/ambari.sql
+ 
+• Log into ambari db as ambari role:
+psql ambari ambari
+password=bigdata
+\d to list tables

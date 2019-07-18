@@ -1,0 +1,50 @@
+spark-action_issues.txt
+
+KB Article:
+https://hortonworks.my.salesforce.com/kA1E0000000LZtB?srPos=2&srKp=ka1&lang=en_US
+
+
+===========
+2016-05-06 21:06:22,145 ERROR [main] org.apache.spark.SparkContext: Error initializing SparkContext.
+java.lang.IllegalArgumentException: System memory 282066944 must be at least 4.718592E8. Please use a larger heap size.
+	at org.apache.spark.memory.UnifiedMemoryManager$.getMaxMemory(UnifiedMemoryManager.scala:193)
+	at org.apache.spark.memory.UnifiedMemoryManager$.apply(UnifiedMemoryManager.scala:175)
+	at org.apache.spark.SparkEnv$.create(SparkEnv.scala:354)
+	at org.apache.spark.SparkEnv$.createDriverEnv(SparkEnv.scala:193)
+	at org.apache.spark.SparkContext.createSparkEnv(SparkContext.scala:288)
+	at org.apache.spark.SparkContext.<init>(SparkContext.scala:457)
+	at org.apache.spark.api.java.JavaSparkContext.<init>(JavaSparkContext.scala:59)
+	at com.ajmal.sample.hivecontext.JavaSparkSQLBench.main(JavaSparkSQLBench.java:43)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:497)
+	at org.apache.spark.deploy.SparkSubmit$.org$apache$spark$deploy$SparkSubmit$$runMain(SparkSubmit.scala:731)
+	at org.apache.spark.deploy.SparkSubmit$.doRunMain$1(SparkSubmit.scala:181)
+	at org.apache.spark.deploy.SparkSubmit$.submit(SparkSubmit.scala:206)
+	at org.apache.spark.deploy.SparkSubmit$.main(SparkSubmit.scala:121)
+	at org.apache.spark.deploy.SparkSubmit.main(SparkSubmit.scala)
+	at org.apache.oozie.action.hadoop.SparkMain.runSpark(SparkMain.java:104)
+	at org.apache.oozie.action.hadoop.SparkMain.run(SparkMain.java:95)
+	at org.apache.oozie.action.hadoop.LauncherMain.run(LauncherMain.java:47)
+	at org.apache.oozie.action.hadoop.SparkMain.main(SparkMain.java:38)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:497)
+	at org.apache.oozie.action.hadoop.LauncherMapper.map(LauncherMapper.java:241)
+	at org.apache.hadoop.mapred.MapRunner.run(MapRunner.java:54)
+	at org.apache.hadoop.mapred.MapTask.runOldMapper(MapTask.java:453)
+	at org.apache.hadoop.mapred.MapTask.run(MapTask.java:343)
+	at org.apache.hadoop.mapred.YarnChild$2.run(YarnChild.java:168)
+	at java.security.AccessController.doPrivileged(Native Method)
+	at javax.security.auth.Subject.doAs(Subject.java:422)
+	at org.apache.hadoop.security.UserGroupInformation.doAs(UserGroupInformation.java:1657)
+	at org.apache.hadoop.mapred.YarnChild.main(YarnChild.java:162)
+
+Add in workflow:
+<property>
+    <name>oozie.launcher.mapred.map.child.java.opts</name>
+    <value>-Xms128m -Xmx512m -XX:MaxPermSize=300m -ea</value>
+</property>
+

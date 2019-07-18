@@ -1,0 +1,31 @@
+get_configurations_api
+
+=====This gives all the latest version tags=====
+curl -u admin:admin -H "X-Requested-By: ambari" -X GET http://hdp-m1.hw.com:8080/api/v1/clusters/HDP22?fields=Clusters/desired_configs
+
+
+To pull all the client configs as tar
+=====================================
+
+# Replace the variables based on your cluster 
+
+_AMBARI_USER=admin 
+_AMBARI_PASSWORD=admin 
+_AMBARI_HOST=10.0.1.151 
+_AMBARI_PORT=8080 
+_CLUSTER_NAME=HDP232KERB 
+
+curl -u $_AMBARI_USER:$_AMBARI_PASSWORD -o HDFS_CLIENT.tar.gz http://$_AMBARI_HOST:$_AMBARI_PORT/api/v1/clusters/$_CLUSTER_NAME/services/HDFS/components/HDFS_CLIENT?format=client_config_tar 
+curl -u $_AMBARI_USER:$_AMBARI_PASSWORD -o MAPREDUCE2_CLIENT.tar.gz http://$_AMBARI_HOST:$_AMBARI_PORT/api/v1/clusters/$_CLUSTER_NAME/services/MAPREDUCE2/components/MAPREDUCE2_CLIENT?format=client_config_tar 
+curl -u $_AMBARI_USER:$_AMBARI_PASSWORD -o TEZ_CLIENT.tar.gz http://$_AMBARI_HOST:$_AMBARI_PORT/api/v1/clusters/$_CLUSTER_NAME/services/TEZ/components/TEZ_CLIENT?format=client_config_tar 
+curl -u $_AMBARI_USER:$_AMBARI_PASSWORD -o YARN_CLIENT.tar.gz http://$_AMBARI_HOST:$_AMBARI_PORT/api/v1/clusters/$_CLUSTER_NAME/services/YARN/components/YARN_CLIENT?format=client_config_tar 
+curl -u $_AMBARI_USER:$_AMBARI_PASSWORD -o ZOOKEEPER_CLIENT.tar.gz http://$_AMBARI_HOST:$_AMBARI_PORT/api/v1/clusters/$_CLUSTER_NAME/services/ZOOKEEPER/components/ZOOKEEPER_CLIENT?format=client_config_tar 
+curl -u $_AMBARI_USER:$_AMBARI_PASSWORD -o HIVE_CLIENT.tar.gz http://$_AMBARI_HOST:$_AMBARI_PORT/api/v1/clusters/$_CLUSTER_NAME/services/HIVE/components/HIVE_CLIENT?format=client_config_tar 
+curl -u $_AMBARI_USER:$_AMBARI_PASSWORD -o HBASE_CLIENT.tar.gz http://$_AMBARI_HOST:$_AMBARI_PORT/api/v1/clusters/$_CLUSTER_NAME/services/HBASE/components/HBASE_CLIENT?format=client_config_tar 
+curl -u $_AMBARI_USER:$_AMBARI_PASSWORD -o OOZIE_CLIENT.tar.gz http://$_AMBARI_HOST:$_AMBARI_PORT/api/v1/clusters/$_CLUSTER_NAME/services/OOZIE/components/OOZIE_CLIENT?format=client_config_tar 
+curl -u $_AMBARI_USER:$_AMBARI_PASSWORD -o ACCUMULO_CLIENT.tar.gz http://$_AMBARI_HOST:$_AMBARI_PORT/api/v1/clusters/$_CLUSTER_NAME/services/ACCUMULO/components/ACCUMULO_CLIENT?format=client_config_tar 
+curl -u $_AMBARI_USER:$_AMBARI_PASSWORD -o FALCON_CLIENT.tar.gz http://$_AMBARI_HOST:$_AMBARI_PORT/api/v1/clusters/$_CLUSTER_NAME/services/FALCON/components/FALCON_CLIENT?format=client_config_tar 
+curl -u $_AMBARI_USER:$_AMBARI_PASSWORD -o PIG.tar.gz http://$_AMBARI_HOST:$_AMBARI_PORT/api/v1/clusters/$_CLUSTER_NAME/services/PIG/components/PIG?format=client_config_tar 
+curl -u $_AMBARI_USER:$_AMBARI_PASSWORD -o SLIDER.tar.gz http://$_AMBARI_HOST:$_AMBARI_PORT/api/v1/clusters/$_CLUSTER_NAME/services/SLIDER/components/SLIDER?format=client_config_tar 
+curl -u $_AMBARI_USER:$_AMBARI_PASSWORD -o SQOOP.tar.gz http://$_AMBARI_HOST:$_AMBARI_PORT/api/v1/clusters/$_CLUSTER_NAME/services/SQOOP/components/SQOOP?format=client_config_tar 
+

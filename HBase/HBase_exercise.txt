@@ -1,0 +1,212 @@
+HBase_exercise
+
+$ hbase shell
+hbase(main):001:0>
+
+hbase(main):001:0> status
+2 servers, 0 dead, 1.0000 average load
+
+hbase(main):002:0> list
+TABLE
+0 row(s) in 0.0420 seconds
+
+=> []
+hbase(main):003:0> whoami
+vagrant (auth:SIMPLE)
+    groups: vagrant, users
+
+hbase(main):004:0> create 'employee', 'personal', 'professional'
+0 row(s) in 1.3110 seconds
+
+=> Hbase::Table - employee
+hbase(main):005:0> put 'employee', '1', 'personal:name', 'Mark'
+0 row(s) in 0.1940 seconds
+
+hbase(main):006:0> put 'employee', '1', 'personal:city', 'Frisco, TX'
+0 row(s) in 0.0340 seconds
+
+hbase(main):007:0> put 'employee', '1', 'professional:salary', 100000
+0 row(s) in 0.0200 seconds
+
+hbase(main):008:0> put 'employee', '1', 'professional:title', 'Tech Support Engineer'
+0 row(s) in 0.0260 seconds
+
+hbase(main):009:0> get 'employee', '1'
+COLUMN                      CELL
+ personal:city              timestamp=1465246167860, value=Frisco, TX
+ personal:name              timestamp=1465246131435, value=Mark
+ professional:salary        timestamp=1465246175140, value=100000
+ professional:title         timestamp=1465246183539, value=Tech Support Engineer
+4 row(s) in 0.0490 seconds
+
+hbase(main):010:0> scan 'employee'
+ROW                         COLUMN+CELL
+ 1                          column=personal:city, timestamp=1465246167860, value=Frisco, TX
+ 1                          column=personal:name, timestamp=1465246131435, value=Mark
+ 1                          column=professional:salary, timestamp=1465246175140, value=100000
+ 1                          column=professional:title, timestamp=1465246183539, value=Tech Support Engin
+                            eer
+1 row(s) in 0.0460 seconds
+
+hbase(main):011:0>
+
+hbase(main):016:0> describe 'employee'
+Table employee is ENABLED
+employee
+COLUMN FAMILIES DESCRIPTION
+{NAME => 'personal', BLOOMFILTER => 'ROW', VERSIONS => '1', IN_MEMORY => 'false', KEEP_DELETED_CELLS =>
+'FALSE', DATA_BLOCK_ENCODING => 'NONE', TTL => 'FOREVER', COMPRESSION => 'NONE', MIN_VERSIONS => '0', BL
+OCKCACHE => 'true', BLOCKSIZE => '65536', REPLICATION_SCOPE => '0'}
+{NAME => 'professional', BLOOMFILTER => 'ROW', VERSIONS => '1', IN_MEMORY => 'false', KEEP_DELETED_CELLS
+ => 'FALSE', DATA_BLOCK_ENCODING => 'NONE', TTL => 'FOREVER', COMPRESSION => 'NONE', MIN_VERSIONS => '0'
+, BLOCKCACHE => 'true', BLOCKSIZE => '65536', REPLICATION_SCOPE => '0'}
+2 row(s) in 0.0380 seconds
+
+hbase(main):024:0>
+
+
+Data Representation:
+====================
+{
+	'1' : {
+		'personal' : {
+			'name' : 'Mark',
+			'city' : 'Frisco, TX'
+		},
+		'professional' : {
+			'salary' : '100,000',
+			'title' : 'Tech Support Engineer'
+		}
+	},
+	'2' : {
+		'personal' : {
+			'name' : 'Bill',
+			'city' : 'Santa Clara, CA'
+		},
+		'professional' : {
+			'salary' : '150,000',
+			'title' : 'Manager - Tech Support'
+		}
+	}
+}
+
+Create external HIVE table for HBASE Employee table
+===================================================
+
+
+
+
+
+
+
+
+
+
+Hive Create table for HBase Employee:
+
+export HADOOP_CLASSPATH=
+/usr/hdp/2.3.4.0-3485/hive-hcatalog/share/hcatalog/hive-hcatalog-core-1.2.1.2.3.4.0-3485.jar:/usr/hdp/2.3.4.0-3485/hive-hcatalog/share/hcatalog/hive-hcatalog-server-extensions-1.2.1.2.3.4.0-3485.jar:/usr/hdp/2.3.4.0-3485/hive-hcatalog/share/webhcat/java-client/hive-webhcat-java-client-1.2.1.2.3.4.0-3485.jar:/usr/hdp/2.3.4.0-3485/hive/lib/zookeeper-3.4.6.2.3.4.0-3485.jar:/usr/hdp/2.3.4.0-3485/hive/lib/hive-hbase-handler.jar:/usr/hdp/2.3.4.0-3485/hive/lib/guava-14.0.1.jar:/usr/hdp/2.3.4.0-3485/hbase/lib/hbase-client.jar:/usr/hdp/2.3.4.0-3485/hbase/lib/hbase-common.jar:/usr/hdp/2.3.4.0-3485/hbase/lib/hbase-protocol.jar:/usr/hdp/2.3.4.0-3485/hbase/lib/hbase-server.jar:/usr/hdp/2.3.4.0-3485/hbase/lib/hbase-shell.jar:/usr/hdp/2.3.4.0-3485/hbase/lib/hbase-thrift.jar
+
+
+Following jars are needed for Hive-HBase interaction:
+===============================================================
+/usr/hdp/2.3.4.0-3485/hive/lib/zookeeper-3.4.6.2.3.4.0-3485.jar
+
+/usr/hdp/2.3.4.0-3485/hive/lib/hive-hbase-handler.jar
+hive-hbase-handler-1.2.1.2.3.4.0-3485.jar
+
+/usr/hdp/2.3.4.0-3485/hive/lib/guava-14.0.1.jar
+
+/usr/hdp/2.3.4.0-3485/hbase/lib/hbase-client.jar
+hbase-client-1.1.2.2.3.4.0-3485.jar
+
+/usr/hdp/2.3.4.0-3485/hbase/lib/hbase-common.jar
+hbase-common-1.1.2.2.3.4.0-3485.jar
+
+/usr/hdp/2.3.4.0-3485/hbase/lib/hbase-protocol.jar
+hbase-protocol-1.1.2.2.3.4.0-3485.jar
+
+/usr/hdp/2.3.4.0-3485/hbase/lib/hbase-server.jar
+hbase-server-1.1.2.2.3.4.0-3485.jar
+
+/usr/hdp/2.3.4.0-3485/hbase/lib/hbase-shell.jar
+hbase-shell-1.1.2.2.3.4.0-3485.jar
+
+/usr/hdp/2.3.4.0-3485/hbase/lib/hbase-thrift.jar
+hbase-thrift-1.1.2.2.3.4.0-3485.jar
+===============================================================
+
+Only Hive Table:
+CREATE TABLE employee(id int, name STRING, city STRING, salary DECIMAL, title STRING)
+
+CREATE EXTERNAL TABLE employee_dummy(id int, name STRING, city STRING, salary DECIMAL, title STRING)
+stored by 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+with SERDEPROPERTIES ('hbase.columns.mapping' = ':key,personal:name,personal:city,professional:salary,professional:title')
+TBLPROPERTIES ('hbase.table.name' = 'employee');
+
+Added below property to hive-site.xml
+hive.aux.jars.path =
+file:///usr/hdp/2.3.4.0-3485/hive/lib/zookeeper-3.4.6.2.3.4.0-3485.jar,file:///usr/hdp/2.3.4.0-3485/hive/lib/hive-hbase-handler.jar,file:///usr/hdp/2.3.4.0-3485/hive/lib/guava-14.0.1.jar,file:///usr/hdp/2.3.4.0-3485/hbase/lib/hbase-client.jar,file:///usr/hdp/2.3.4.0-3485/hbase/lib/hbase-common.jar,file:///usr/hdp/2.3.4.0-3485/hbase/lib/hbase-protocol.jar,file:///usr/hdp/2.3.4.0-3485/hbase/lib/hbase-server.jar,file:///usr/hdp/2.3.4.0-3485/hbase/lib/hbase-shell.jar,file:///usr/hdp/2.3.4.0-3485/hbase/lib/hbase-thrift.jar
+
+
+
+For runHiveCLI.sh to work:
+hdfs dfs -chmod -R 777 /user/ajmal/output
+hdfs dfs -chmod -R 777 /tmp/hive/yarn
+
+Finally set :
+dfs.permissions.enabled = false
+
+
+
+=======
+Accessing HBAse tables by users
+-------
+klist -kt /etc/security/keytabs/hbase.headless.keytab
+kinit -kt /etc/security/keytabs/hbase.headless.keytab hbase-supportLab@SUPPORT.COM
+
+hbase shell
+hbase(main):002:0>
+hbase(main):003:0* grant 'hive', 'RWC', 'employee'
+0 row(s) in 0.3970 seconds
+
+hbase(main):004:0> grant 'ajmal', 'RWC', 'employee'
+0 row(s) in 0.1210 seconds
+
+hbase(main):005:0>
+
+Use the DOC : http://www.cloudera.com/documentation/enterprise/latest/topics/cdh_sg_hbase_authorization.html
+
+========
+
+
+The below was needed for the complex query:
+
+SELECT id, name, city, salary, title FROM (SELECT id, name, city, salary, title, rank() over (order by cast(salary as float) desc) as r FROM default.employee_hbase) S WHERE S.r = 1;
+
+&&&&&&&&&&&&&&&&&
+Caused by: java.lang.ClassNotFoundException: org.apache.hadoop.hbase.CompatibilityFactory
+	at java.net.URLClassLoader.findClass(URLClassLoader.java:381)
+	at java.lang.ClassLoader.loadClass(ClassLoader.java:424)
+	at sun.misc.Launcher$AppClassLoader.loadClass(Launcher.java:331)
+	at java.lang.ClassLoader.loadClass(ClassLoader.java:357)
+	... 40 more
+FAILED: Execution Error, return code -101 from org.apache.hadoop.hive.ql.exec.tez.TezTask. org/apache/hadoop/hbase/CompatibilityFactory
+
+Adding the below extra jars to the sharelib:
+1) hbase-hadoop-compat-1.1.2.2.3.4.7-4.jar
+
+Caused by: java.lang.ClassNotFoundException: com.yammer.metrics.core.MetricsRegistry
+	at java.net.URLClassLoader.findClass(URLClassLoader.java:381)
+	at java.lang.ClassLoader.loadClass(ClassLoader.java:424)
+	at sun.misc.Launcher$AppClassLoader.loadClass(Launcher.java:331)
+	at java.lang.ClassLoader.loadClass(ClassLoader.java:357)
+	... 40 more
+FAILED: Execution Error, return code -101 from org.apache.hadoop.hive.ql.exec.tez.TezTask. com/yammer/metrics/core/MetricsRegistry
+
+Adding the below extra jars to the sharelib:
+2) metrics-core-2.2.0.jar
+
+
+
+

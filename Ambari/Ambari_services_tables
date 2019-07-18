@@ -1,0 +1,33 @@
+Ambari_services_tables
+
+delete from clusterservices where service_name='KAFKA';
+delete from servicecomponentdesiredstate where service_name='KAFKA';
+delete from hostcomponentstate where service_name='KAFKA';
+delete from servicedesiredstate where service_name='KAFKA';
+
+select * from servicedesiredstate;
+select * from hostcomponentstate;
+select * from servicecomponentdesiredstate;
+select * from clusterservices;
+
+
+select * from host_version;
+select * from cluster_version;
+select * from repo_version;
+
+
+
+# psql ambari ambari -e -f ambari.sql -L ambari.txt 
+(You'll need the ambari DB password; the default for that is "bigdata") 
+
+\pset pager off 
+\pset format aligned 
+select host_id, cluster_id from clusterhostmapping ; 
+select host_id, config_group_id from configgrouphostmapping ; 
+select host_id, task_id from host_role_command limit 300; 
+select host_id, state from host_version ; 
+select host_id, component_name from hostcomponentdesiredstate ; 
+select host_id, component_name from hostcomponentstate ; 
+select host_id, service_name from hostconfigmapping ; 
+select host_id, host_name from hosts; 
+select host_id, agent_version, current_state, health_status from hoststate ; 

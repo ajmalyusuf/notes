@@ -1,0 +1,11 @@
+MSQL notes:
+
+Checking if running:
+service mysqld status
+
+using root :
+service mysqld start
+service mysqld stop
+
+loging in :
+mysql -uhive -phive

@@ -1,0 +1,34 @@
+Moving_Historyserver_to_another_host.txt
+
+We cannot move history server from Ambari UI.
+
+We need to use Ambari CURL commands to do this.
+
+1> Stop History server from Ambari. 
+
+2> Run the below command
+
+curl -u admin:admin -H "X-Requested-By:ambari" -i -X GET http://AMBARI_HOST:8080/api/v1/clusters/CLUSTER_NAME/hosts/OLD_SERVER_HOSTNAME/host_components/HISTORYSERVER
+
+This should show history server details.
+
+3> Run this command to set make sure History server is Stopped completely.
+
+ curl -u admin:admin -H "X-Requested-By:ambari" -X PUT -d '{"HostRoles": {"state": "INSTALLED"}}' http://AMBARI_HOST:8080/api/v1/clusters/CLUSTER_NAME/hosts/OLD_SERVER_HOSTNAME/host_components/HISTORYSERVER
+
+
+4> Delete the History server 
+
+curl -u admin:admin -H "X-Requested-By:ambari" -i -X DELETE http://AMBARI_HOST:8080/api/v1/clusters/CLUSTER_NAME/hosts/OLD_SERVER_HOSTNAME/host_components/HISTORYSERVER
+
+
+5> Add the history server on the new host
+
+curl -u admin:admin -H "X-Requested-By:ambari" -i -X POST http://AMBARI_HOST:8080/api/v1/clusters/CLUSTER_NAME/hosts/NEW_SERVER_HOSTNAME/host_components/HISTORYSERVER
+
+
+After this, go to Ambari UI --> Click on MapReduce2 --> Click on History server --> In the drop down next to History server, select Reinstal
+
+Before starting the History server, go to Advanced mapred-site  and change the mapreduce.jobhistory.webapp.address to the new host and save the settings.
+
+Start history server now.

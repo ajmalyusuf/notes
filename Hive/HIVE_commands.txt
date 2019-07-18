@@ -1,0 +1,13 @@
+HIVE_commands
+
+To know the properties use 'set' command in hive shell
+hive> set
+OR you may run it from prompt like below
+$ hive -e "set -v" | grep tez
+
+Running a query by invoking hive:
+
+hive -e "select * from dm.date_dim limit 10"
+
+hive -hiveconf mapred.job.queue.name=foo -e "select actual_date from dm.date_dim limit 10"
+

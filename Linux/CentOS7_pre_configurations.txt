@@ -1,0 +1,88 @@
+CentOS7_pre_configurations
+
+Disabling firewall in Cent OS 7 (no longer iptables)
+
+http://www.certdepot.net/rhel7-get-started-firewalld/
+http://www.liquidweb.com/kb/how-to-stop-and-disable-firewalld-on-centos-7/
+
+
+============================ network
+vi /etc/sysconfig/network
+Added :
+NETWORKING=yes
+GATEWAY=10.0.1.1
+HOSTNAME=n1-centos7.hdp.com
+
+
+cat /etc/sysconfig/network
+# Created by anaconda
+NETWORKING=yes
+GATEWAY=10.0.1.1
+HOSTNAMEr=n1-centos7.hdp.com
+============================= ssh
+ssh-keygen
+Enter all defaults
+cd .ssh/
+ls
+id_rsa  id_rsa.pub
+cat id_rsa.pub >> authorized_keys
+ls -al
+total 16
+drwx------. 2 root root   58 Nov 10 00:23 .
+dr-xr-x---. 3 root root 4096 Nov 10 00:21 ..
+-rw-r--r--. 1 root root  405 Nov 10 00:23 authorized_keys
+-rw-------. 1 root root 1679 Nov 10 00:21 id_rsa
+-rw-r--r--. 1 root root  405 Nov 10 00:21 id_rsa.pub
+
+chmod 600 authorized_keys
+ssh localhost   (To Test)
+
+echo 'StrictHostKeyChecking no' >> config
+============================== ntpd
+
+yum install ntp
+
+systemctl start ntpd
+systemctl enable ntpd
+
+To Stop:
+systemctl stop ntpd
+
+To Check:
+ntpq -p
+=============================== Firewall
+systemctl disable firewalld
+
+systemctl start firewalld
+systemctl stop firewalld
+
+=============================== IP V6
+
+Disble IP V6
+vi /etc/sysctl.conf
+Add at the end:
+net.ipv6.conf.all.disable_ipv6 = 1
+net.ipv6.conf.default.disable_ipv6 = 1
+
+=============================== Hostname
+
+hostnamectl set-hostname n1-centos7.hdp.com
+hostnamectl status
+
+# getent hosts 10.0.1.61
+10.0.1.61       n1-centos7.hdp.com
+# getent hosts n1-centos7.hdp.com
+10.0.1.61       n1-centos7.hdp.com
+
+================================ SELinux
+
+vi /etc/selinux/config
+
+# SELINUX=enforcing
+SELINUX=disabled
+
+
+
+
+
+

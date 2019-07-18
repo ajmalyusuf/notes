@@ -1,0 +1,39 @@
+RESOLTUION:
+1. Check if  Iptables is running
+# service iptables status
+2. if it is running then turn it off by running this command
+# service iptables stop
+3. Optionally Configure iptables to off by default:
+# chkconfig iptables off
+
+sudo initctl list
+service --status-all
+sudo service postgresql status
+
+ROOTCAUSE: The customer has an issue connecting to Cluster hosted in Cloud through Ambari. As part of the trouble shooting, the customer ran ambari setup selecting all default option. The actual issue was related to network connectivity. The "ambari setup" pointed the DB to the default postgres database; however the ambari was originally configured to use mysql database.
+
+RESOLUTION: Re ran the Ambari setup to point the DB to the existing mysql database. Once this was done, all the cluster components were appearing in Ambari UI and was able to operate from Ambari UI.
+
+
+
+curl -u admin:admin -X DELETE -H "X-Requested-By: ambari" http://localhost:8080/api/v1/clusters/hdpghostery01/hosts/ip-10-40-1-45.ec2.internal/host_components/HCAT
+
+
+http://docs.hortonworks.com/HDPDocuments/Ambari-2.2.0.0/bk_upgrading_Ambari/content/_ambari_upgrade_guide.html
+http://docs.hortonworks.com/HDPDocuments/Ambari-2.2.0.0/bk_upgrading_Ambari/content/_ambari_upgrade_guide.html
+
+
+
+from Alejandro Fernandez (Ambari dev) to Everyone:
+
+select repo_version_id, version, display_name from repo_version;
+select * from cluster_version;
+select repo_version_id, state, COUNT(*) from host_version group by repo_version_id, state order by repo_version_id;
+select service_name, component_name, version , host_id from hostcomponentstate where version NOT LIKE '2.3.4.0-%' order by version, service_name, component_name, host_id;
+
+UPDATE cluster_version set state = 'CURRENT' where repo_version_id = 51;
+UPDATE cluster_version set state = 'INSTALLED' where repo_version_id = 1;
+UPDATE host_version set state = 'CURRENT' where repo_version_id = 51;
+UPDATE host_version set state = 'INSTALLED' where repo_version_id = 1;
+UPDATE hostcomponentstate SET upgrade_state = 'NONE';
+UPDATE hostcomponentstate set version = '2.3.4.0-3485' where host_id = 301 and version = '2.3.0.0-2557’;

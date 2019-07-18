@@ -1,0 +1,49 @@
+Capacity_Scheduler_Calculations
+
+KB Article:
+-----------
+Use the following formula to help derive the best numbers for the cluster: 
+ 
+The capacity scheduler calculates the maxActiveApplications and the maxActiveApplicationsPerUser based on the config yarn.scheduler.capacity.maximum-applications or default 10000.
+
+MaxActiveApplications = max ( ceil ( clusterMemory/minAllocation * maxAMResource% * absoluteMaxCapacity), 1)
+
+MaxActiveAppsPerUser = max( ceil (maxActiveApplicationsComputedAbove * (userLimit%/100) * userLimitFactor), 1)
+
+maxActiveApplications is already multiplied by the queue absolute MAXIMUM capacity, so if max capacity > capacity and if you have user limit factor 1 (which is the default) and only 1 user is running, that user will not be allowed to use over the queue capacity, so having it relative to MAX capacity doesn't make sense. That user could easily end up in a deadlock and all its space used by application masters.
+
+By Phil:
+---------
+Hi Predrag, 
+
+My name is Phil and I've taken over this case. I can't fully verify the numbers you are quoting with the data provided but they do not sound unreasonable depending on the size of the cluster. Remember that an "application" in YARN's understanding is a single app master. In MR or Tez, a single appmaster could be responsible for hundreds or thousands of containers, depending on the cluster size. This is not a cap on running containers. 
+
+When you see "Schedulable" applications you should read this as "Active" applications (i.e. running at the same time). 
+
+The calculation of this for each queue is using different logic for "Max Schedulable Applications" vs "Max Schedulable applications per user" in that the former uses queue max capacity and is not scaled by the user limit or the user limit factor. 
+
+There are two notions of the maximum schedulable/active applications in each queue - one based on the queue's capacity, and one based on the queue's maximum capacity. The notion of max active is based on the theoretical maximum number of application masters that can be running in a given queue at a time, based on the maximum-am-resource-percent. It basically works like this: 
+
+(Total YARN memory currently in the cluster / minimum-allocation-mb) * maximum-am-resource-percent * "capacity" 
+
+where "capacity" is either the queue's capacity or the maximum-capacity settings (the calculation is always done for both). 
+
+Note that YARN tends to round up calculations, and it's never possible for these calculations to return < 1. There is always a Math.max(return_val, 1) which forces the return value to be at *least* 1. It's not possible to craft a config that allows 0 applications to run. This means that you might wind up with a bit more than you strictly should have but this is generally not a big issue. 
+
+To get the maximum schedulable applications for a queue, the above calculation is done using the queue's maximum capacity. End of story. 
+
+to get the maximum schedulable applications per-user is a bit more involved. First let maxAppsBasedOnAbsoluteCapacity be equal to the maximum number of applications allowed based on the queue's capacity (NOT maximum-capacity). Then do this: 
+
+maxAppsBasedOnAbsoluteCapacity * (minimum-user-limit-percent/100.0) * user-limit-factor. 
+
+The calculations are different because normally a single user cannot use more than the capacity in the cluster (i.e. can't go to maximum-capacity) however you can exceed this limit if user-limit-factor allows it. 
+
+So you can see from all of this that the maximum schedulable (active) applications is really based on total cluster memory, reduced by the maximum-am-resource-percent, and then assuming all appmasters are the size of minimum-allocation-mb. This number is then spread out to the queues based on their capacity numbers, and per-user limits applied accordingly. 
+
+Given that for most application loads, the number of containers greatly outnumbers the number of application masters, these tend to work out to be pretty small numbers. In the rare case where you actually have very few other containers and your application is very appmaster heavy, you can consider increasing maximum-am-resource-percent to get more appmasters, and therefore more schedulable applications. 
+
+All the guts of this logic are contained in LeafQueue.java and CSQueueUtils.java, if you are interested in seeing the actual math for yourself. 
+
+Please let me know if you have any more questions about this. 
+
+Thanks,

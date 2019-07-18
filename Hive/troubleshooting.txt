@@ -1,0 +1,47 @@
+troubleshooting
+
+- Are all services running?
+- Can you run query in Hive CLI vs HS2 (HiveServer2)?
+- Can you run simple query?
+- is there a problem with DDL?
+- Is there a resource contention in the cluster?
+- Can you run query using MR vs Tez?
+	- set hive.execution.engine=mr
+	- set hive.execution.engine=tez
+- What kind of optimizations are turned on (known issues)?
+	- like "set true hive.optimize.sort.dynamic.partition=false", if this is set to true, it causes some issues
+- check HDFS permissions
+- you can run dfs commands from hive / beeline prompt:
+	hive > dfs -ls /tmp;
+
+	to run hive in DEBUG mode:
+	hive -hiveconf hive.root.logger=DEBUG,console -f file.hql 2>&1 | tee 1.txt
+
+	hive > describe formatted <database>.<tablename>;
+	hive > describe extended <tablename>;
+
+	hive > show create table <tablename> ;
+
+Need to ensure that the HDFS data has a field delimiter and hive is serde property is set to that. If not, the result may be null.
+
+If the delimiter in HDFS file is a "," then,
+alter table <tablename> set serdeproperties('field.delim'=',');
+
+=========================================
+How to switch between running MR jobs to running Tez jobs in the same Hive session?
+
+SOLUTION:  
+
+To switch from running Tez jobs to running MR jobs, run the following command in Hive.
+
+1) set set hive.execution.engine=mr; 
+
+2) set mapreduce.framework.name=yarn;
+
+
+To switch from running MR jobs to running Tez jobs, run the following command in Hive.
+
+1) set set hive.execution.engine=tez; 
+
+2) set mapreduce.framework.name=yarn-tez (optional, if Tez is the default framework) 
+=========================================

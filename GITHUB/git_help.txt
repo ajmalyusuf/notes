@@ -1,0 +1,268 @@
+---> List all the configs for a project:
+git config --list
+
+git branch
+	---> Show branches on the local
+	---> * shows the active branch
+
+git branch -a
+	---> Show all the local and remote branches
+
+git remote add upstream https://github.com/hortonworks/support-tooling.git
+	---> To add an upstream repo from where the fork was done
+
+git fetch upstream
+	---> This will get all the upstream changes to the lcoal copy; but will not merge it to local
+
+git pull upstream origin master
+	---> This will pull all upstream changes to local and merge with the loal.
+	---> may need to resolve conflict
+
+git push -u origin master
+	---> This will push or publish all local chnages to the origin repo
+	---> git push -u origin <branch or master>
+
+==============
+Workng on git:
+==============
+
+mkdir git; cd git
+git clone https://github.com/ajmalyusuf/support-tools
+cd support-tools/
+
+git config --list
+git branch
+git branch -a
+
+---> Check Github for a branch (in my case ajmal-branch had the changes)
+git checkout ajmal-branch
+	Branch 'ajmal-branch' set up to track remote branch 'ajmal-branch' from 'origin'.
+	Switched to a new branch 'ajmal-branch'
+	---> This should bring all the changes from origin/ajmal-branch to local
+git status
+	On branch ajmal-branch
+	Your branch is up to date with 'origin/ajmal-branch'.
+
+	nothing to commit, working tree clean
+
+---> Trying to merge all the changes I have on ajmal-branch to the master branch (on ajmalyusuf repo and NOT the hortonworks repo)
+git checkout master
+	Switched to branch 'master'
+	Your branch is up to date with 'origin/master'.
+
+git status
+	On branch master
+	Your branch is up to date with 'origin/master'.
+
+	nothing to commit, working tree clean
+
+git merge ajmal-branch
+	Updating 8688f80a0..05f0a6816
+	Fast-forward
+ 	  .gitignore....
+ 	  ....
+ 	  ....
+ 	  delete mode 100644 smartsense-activity-analyzer/.pmd
+ 	  create mode 100644 viewer/src/test/scala/com/hortonworks/smartsense/metrics/OrchApiTests.scala
+
+ls -al
+	---> all changes are brought in to the master from ajmal-branch
+
+git push -u origin master
+	Total 0 (delta 0), reused 0 (delta 0)
+	To https://github.com/ajmalyusuf/support-tools
+   		8688f80a0..05f0a6816  master -> master
+	Branch 'master' set up to track remote branch 'master' from 'origin'.
+
+	---> All chanegd from ajmal-branch is now seen on master online
+
+---> Now local/master, local/ajmal-branch, origin/master and origin/ajmal-branch are all the same
+---> Please note that, all of these are on the FORKed repo ajmalyusuf and not the UPSTREAM hortonworks repo
+
+---> Lets make some changes to the ajmal-branch local
+
+git branch
+	  ajmal-branch
+  	* master
+git checkout ajmal-branch
+	Switched to branch 'ajmal-branch'
+	Your branch is up to date with 'origin/ajmal-branch'.
+pwd
+	/Users/ayusuf/git/support-tools
+mkdir smartsense-cli
+cd smartsense-cli
+cp -r ~/ss_cli/a-12344321-c-43211234_runbook_123457_2018-01-20_17-08-14 ./
+cp ~/ss_cli/hosts.py ./
+git status
+	On branch ajmal-branch
+	Your branch is up to date with 'origin/ajmal-branch'.
+
+	Untracked files:
+  		(use "git add <file>..." to include in what will be committed)
+
+			smartsense-cli/
+
+	nothing added to commit but untracked files present (use "git add" to track)
+	---> This shows that smartsense-cli/ is not checked in
+git add smartsense-cli/
+git status
+	On branch ajmal-branch
+	Your branch is up to date with 'origin/ajmal-branch'.
+
+	Changes to be committed:
+  		(use "git reset HEAD <file>..." to unstage)
+
+			new file:   smartsense-cli/a-12344321-c-43211234_runbook_123457_2018-01-20_17-08-14/cli_metadata.json
+			new file:   smartsense-cli/a-12344321-c-43211234_runbook_123457_2018-01-20_17-08-14/meta/dictionary.json
+			new file:   smartsense-cli/a-12344321-c-43211234_runbook_123457_2018-01-20_17-08-14/meta/keys/bundle_public.key
+			new file:   smartsense-cli/a-12344321-c-43211234_runbook_123457_2018-01-20_17-08-14/meta/metadata.json
+			new file:   smartsense-cli/a-12344321-c-43211234_runbook_123457_2018-01-20_17-08-14/meta/productinfo.json
+			new file:   smartsense-cli/a-12344321-c-43211234_runbook_123457_2018-01-20_17-08-14/rbook1.openstacklocal-a-12344321-c-43211234_runbook_123457_2018-01-20_17-08-14.tgz
+			new file:   smartsense-cli/a-12344321-c-43211234_runbook_123457_2018-01-20_17-08-14/rbook2.openstacklocal-a-12344321-c-43211234_runbook_123457_2018-01-20_17-08-14.tgz
+			new file:   smartsense-cli/a-12344321-c-43211234_runbook_123457_2018-01-20_17-08-14/rbook3.openstacklocal-a-12344321-c-43211234_runbook_123457_2018-01-20_17-08-14.tgz
+			new file:   smartsense-cli/a-12344321-c-43211234_runbook_123457_2018-01-20_17-08-14/rbook4.openstacklocal-a-12344321-c-43211234_runbook_123457_2018-01-20_17-08-14.tgz
+			new file:   smartsense-cli/hosts.py
+git commit -m "Added a new project for SS CLI"
+	[ajmal-branch 7f02d1453] Added a new project for SS CLI
+ 	10 files changed, 305 insertions(+)
+	 create mode 100644 smartsense-cli/a-12344321-c-43211234_runbook_123457_2018-01-20_17-08-14/cli_metadata.json
+	 create mode 100644 smartsense-cli/a-12344321-c-43211234_runbook_123457_2018-01-20_17-08-14/meta/dictionary.json
+	 create mode 100644 smartsense-cli/a-12344321-c-43211234_runbook_123457_2018-01-20_17-08-14/meta/keys/bundle_public.key
+	 create mode 100644 smartsense-cli/a-12344321-c-43211234_runbook_123457_2018-01-20_17-08-14/meta/metadata.json
+	 create mode 100644 smartsense-cli/a-12344321-c-43211234_runbook_123457_2018-01-20_17-08-14/meta/productinfo.json
+	 create mode 100644 smartsense-cli/a-12344321-c-43211234_runbook_123457_2018-01-20_17-08-14/rbook1.openstacklocal-a-12344321-c-43211234_runbook_123457_2018-01-20_17-08-14.tgz
+	 create mode 100644 smartsense-cli/a-12344321-c-43211234_runbook_123457_2018-01-20_17-08-14/rbook2.openstacklocal-a-12344321-c-43211234_runbook_123457_2018-01-20_17-08-14.tgz
+	 create mode 100644 smartsense-cli/a-12344321-c-43211234_runbook_123457_2018-01-20_17-08-14/rbook3.openstacklocal-a-12344321-c-43211234_runbook_123457_2018-01-20_17-08-14.tgz
+	 create mode 100644 smartsense-cli/a-12344321-c-43211234_runbook_123457_2018-01-20_17-08-14/rbook4.openstacklocal-a-12344321-c-43211234_runbook_123457_2018-01-20_17-08-14.tgz
+	 create mode 100755 smartsense-cli/hosts.py
+---> All changes are staged to the local
+---> Use git push to publish to origin/ajmal-branch
+
+git status
+	On branch ajmal-branch
+	Your branch is ahead of 'origin/ajmal-branch' by 1 commit.
+	  (use "git push" to publish your local commits)
+
+	nothing to commit, working tree clean
+git push -u origin ajmal-branch
+	Counting objects: 16, done.
+	Delta compression using up to 8 threads.
+	Compressing objects: 100% (15/15), done.
+	Writing objects: 100% (16/16), 7.33 MiB | 6.17 MiB/s, done.
+	Total 16 (delta 1), reused 0 (delta 0)
+	remote: Resolving deltas: 100% (1/1), completed with 1 local object.
+	To https://github.com/ajmalyusuf/support-tools
+   		05f0a6816..7f02d1453  ajmal-branch -> ajmal-branch
+	Branch 'ajmal-branch' set up to track remote branch 'ajmal-branch' from 'origin'.
+
+---> Checking diffs
+git diff ajmal-branch origin/ajmal-branch
+	---> No changes
+git diff ajmal-branch master
+	---> All the changes
+git diff ajmal-branch origin/master
+	---> All the changes
+
+git checkout master
+	Switched to branch 'master'
+	Your branch is up to date with 'origin/master'.
+git branch
+	  ajmal-branch
+	* master
+git merge ajmal-branch
+	Updating 05f0a6816..7f02d1453
+	Fast-forward
+	 .../cli_metadata.json                                                       |   1 +
+	 .../meta/dictionary.json                                                    |   1 +
+	 .../meta/keys/bundle_public.key                                             |   1 +
+	 .../meta/metadata.json                                                      |   1 +
+	 .../meta/productinfo.json                                                   |  16 ++
+	 ...nstacklocal-a-12344321-c-43211234_runbook_123457_2018-01-20_17-08-14.tgz | Bin 0 -> 2718319 bytes
+	 ...nstacklocal-a-12344321-c-43211234_runbook_123457_2018-01-20_17-08-14.tgz | Bin 0 -> 1884064 bytes
+	 ...nstacklocal-a-12344321-c-43211234_runbook_123457_2018-01-20_17-08-14.tgz | Bin 0 -> 2583231 bytes
+	 ...nstacklocal-a-12344321-c-43211234_runbook_123457_2018-01-20_17-08-14.tgz | Bin 0 -> 1604337 bytes
+	 smartsense-cli/hosts.py                                                     | 285 ++++++++++++++++++++++++++++++++++++
+	 10 files changed, 305 insertions(+)
+	 create mode 100644 smartsense-cli/a-12344321-c-43211234_runbook_123457_2018-01-20_17-08-14/cli_metadata.json
+	 create mode 100644 smartsense-cli/a-12344321-c-43211234_runbook_123457_2018-01-20_17-08-14/meta/dictionary.json
+	 create mode 100644 smartsense-cli/a-12344321-c-43211234_runbook_123457_2018-01-20_17-08-14/meta/keys/bundle_public.key
+	 create mode 100644 smartsense-cli/a-12344321-c-43211234_runbook_123457_2018-01-20_17-08-14/meta/metadata.json
+	 create mode 100644 smartsense-cli/a-12344321-c-43211234_runbook_123457_2018-01-20_17-08-14/meta/productinfo.json
+	 create mode 100644 smartsense-cli/a-12344321-c-43211234_runbook_123457_2018-01-20_17-08-14/rbook1.openstacklocal-a-12344321-c-43211234_runbook_123457_2018-01-20_17-08-14.tgz
+	 create mode 100644 smartsense-cli/a-12344321-c-43211234_runbook_123457_2018-01-20_17-08-14/rbook2.openstacklocal-a-12344321-c-43211234_runbook_123457_2018-01-20_17-08-14.tgz
+	 create mode 100644 smartsense-cli/a-12344321-c-43211234_runbook_123457_2018-01-20_17-08-14/rbook3.openstacklocal-a-12344321-c-43211234_runbook_123457_2018-01-20_17-08-14.tgz
+	 create mode 100644 smartsense-cli/a-12344321-c-43211234_runbook_123457_2018-01-20_17-08-14/rbook4.openstacklocal-a-12344321-c-43211234_runbook_123457_2018-01-20_17-08-14.tgz
+	 create mode 100755 smartsense-cli/hosts.py
+git diff ajmal-branch master
+	---> Now this shoud be same
+git status
+	On branch master
+	Your branch is ahead of 'origin/master' by 1 commit.
+	  (use "git push" to publish your local commits)
+
+	nothing to commit, working tree clean
+git push -u origin master
+	Total 0 (delta 0), reused 0 (delta 0)
+	To https://github.com/ajmalyusuf/support-tools
+	   05f0a6816..7f02d1453  master -> master
+	Branch 'master' set up to track remote branch 'master' from 'origin'.
+git diff origin/master origin/ajmal-branch
+	---> No changes. Now all the branches local and origin are the same
+
+
+MERGE the changes in all the FORKED branches to the MAIN Upstream Repo (hortonwors)
+===================================================================================
+
+---> Create an upstream repo (the original repo from where we forked)
+git remote add upstream https://github.com/hortonworks/support-tools.git
+	---> This will add remote upstream url to the config
+git config --list
+	credential.helper=osxkeychain
+	filter.lfs.process=git-lfs filter-process
+	filter.lfs.required=true
+	filter.lfs.clean=git-lfs clean -- %f
+	filter.lfs.smudge=git-lfs smudge -- %f
+	user.name=Ajmal Yusuf
+	user.email=ayusuf@hortonworks.com
+	core.repositoryformatversion=0
+	core.filemode=true
+	core.bare=false
+	core.logallrefupdates=true
+	core.ignorecase=true
+	core.precomposeunicode=true
+	remote.origin.url=https://github.com/ajmalyusuf/support-tools
+	remote.origin.fetch=+refs/heads/*:refs/remotes/origin/*
+	branch.master.remote=origin
+	branch.master.merge=refs/heads/master
+	branch.ajmal-branch.remote=origin
+	branch.ajmal-branch.merge=refs/heads/ajmal-branch
+	remote.upstream.url=https://github.com/hortonworks/support-tools.git
+	remote.upstream.fetch=+refs/heads/*:refs/remotes/upstream/*
+git fetch upstream
+	remote: Counting objects: 22805, done.
+	remote: Compressing objects: 100% (77/77), done.
+	....(repeating added by Ajmal)
+	....
+	....
+	 * [new branch]          testing/deanon                        -> upstream/testing/deanon
+	 * [new tag]             av1.4.3.3                             -> av1.4.3.3
+	---> This will fatch all the upstream changes to local; but will not merge it to local
+git pull upstream master
+	---> 
+git push origin master
+
+
+Git basics: how to merge changes from a different fork into your own branch
+http://www.bartread.com/2014/02/12/git-basics-how-to-merge-changes-from-a-different-fork-into-your-own-branch/
+
+Use a Git branch to merge a file
+https://confluence.atlassian.com/bitbucket/use-a-git-branch-to-merge-a-file-681902555.html
+
+The beginner's guide to contributing to a GitHub project
+https://akrabat.com/the-beginners-guide-to-contributing-to-a-github-project/
+
+Git Branching - Basic Branching and Merging
+https://git-scm.com/book/en/v2/Git-Branching-Basic-Branching-and-Merging
+
+
+

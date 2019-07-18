@@ -1,0 +1,41 @@
+Conf_directory
+
+hdp-select version
+
+This is used to set the symlink for /usr/hdp/current : Pointing to the version you specify
+hdp-select set zookeeper-client 2.3.2.0-2950
+
+This will create the /etc/zooker/2.3.2.0-2950/0 directory
+conf-select create-conf-dir --package zookeeper --stack-version 2.3.2.0-2950 --conf-version 0
+
+This will create the symlinks with the /user/hdp/current/zookeeper/conf
+conf-select set-conf-dir --package zookeeper --stack-version 2.3.2.0-2950 --conf-version 0
+
+Please note all the directories will be empty
+
+Then when you start using Ambari - the conf files will be copied to the directory:
+ /etc/zooker/2.3.2.0-2950/0/
+
+
+repoquery --list 
+
+
+Use below to set all pacjages:
+/usr/bin/hdp-select set all <new_version.number>
+
+
+
+conf-select create-conf-dir --package hive --stack-version 2.3.2.0-2950 --conf-version 0
+conf-select set-conf-dir --package hive --stack-version 2.3.2.0-2950 --conf-version 0
+hdp-select set all 2.3.2.0-2950
+
+
+2.3.4.0-3485
+conf-select create-conf-dir --package hive --stack-version 2.3.4.0-3485 --conf-version 0
+conf-select set-conf-dir --package hive --stack-version 2.3.4.0-3485 --conf-version 0
+hdp-select set all 2.3.4.0-3485
+
+Check the for the existance of a "conf" symlink in /etc/hive
+
+
+

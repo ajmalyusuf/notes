@@ -1,0 +1,33 @@
+Fair_scheduler_notes.txt
+
+Fair Scheduler:
+
+- an equal share of resources over time
+- By default, the Fair Scheduler bases scheduling fairness decisions only on memory (can be configured baseed on CPU also)
+
+- Within each queue, a scheduling policy is used to share resources between the running applications
+- The default is memory-based fair sharing, but FIFO and multi-resource with Dominant Resource Fairness can also be configured
+
+
+=====
+<property>
+      <name>yarn.resourcemanager.scheduler.class</name>
+      <value>org.apache.hadoop.yarn.server.resourcemanager.scheduler.fair.FairScheduler</value>
+</property>
+<property>
+      <name>yarn.scheduler.fair.allocation.file</name>
+      <value>/etc/hadoop/conf.empty/fair-scheduler.xml</value>
+</property>
+======
+- The file is reloaded every 10 seconds to refresh the scheduler with any modified settings that are specified in the file.
+
+
+===
+CAPACITY scheduler reload : yarn rmadmin -refreshQueues
+===
+
+===running jobs====
+
+sudo su yarn/user
+
+hadoop jar /usr/hdp/current/hadoop-yarn-client/hadoop-yarn-applications-distributedshell.jar -shell_command "sleep 60" -jar /usr/hdp/current/hadoop-yarn-client/hadoop-yarn-applications-distributedshell.jar -num_containers 5 -queue <queue_name> -node_label_expression <label_name>

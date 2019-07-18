@@ -1,0 +1,29 @@
+Notes
+
+Link to slideshare:
+http://www.slideshare.net/jaxconf/yarn-andreas-neumann
+
+Yarm Container Calculations:
+http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.3.2/bk_installing_manually_book/content/determine-hdp-memory-config.html
+
+The next calculation is to determine the maximum number of containers allowed per node. The following formula can be used:
+
+# of containers = min (2*CORES, 1.8*DISKS, (Total available RAM) / MIN_CONTAINER_SIZE)
+
+Where DISKS is the value for dfs.data.dirs (number of data disks) per machine.
+
+And MIN_CONTAINER_SIZE is the minimum container size (in RAM). This value is dependent on the amount of RAM available -- in smaller memory nodes, the minimum container size should also be smaller. The following table outlines the recommended values:
+
+Customer has 10 disks, 18 core and 128G RAM per machine
+What is the maximum number of containers they should run for MRv2 based on our guidelines?
+
+Cores : 2 * 18 = 36
+Disk : 1.8 * 10 = 18
+RAM = (128 * 1024) / 2048 = 64
+
+So 18 Containers.
+
+
+
+
+

@@ -1,0 +1,29 @@
+beeline_command.txt
+
+[ajmal@sandbox ~]$ beeline
+
+beeline> !connect jdbc:hive2://localhost:10000
+0: jdbc:hive2://localhost:10000>
+0: jdbc:hive2://localhost:10000> create table dave_beeline (s string);
+No rows affected (1.571 seconds)
+0: jdbc:hive2://localhost:10000> show tables;
++---------------------+--+
+|      tab_name       |
++---------------------+--+
+| dave_beeline        |
+| dave_test           |
+| ranger_test         |
+| ranger_test_1       |
+| ranger_test_2       |
+| ranger_test_beewax  |
+| sample_07           |
+| sample_08           |
++---------------------+--+
+8 rows selected (0.246 seconds)
+0: jdbc:hive2://localhost:10000>
+
+CTRL + C to Quit
+
+OR
+
+!q

@@ -1,0 +1,20 @@
+https://github.com/brendangregg/FlameGraph
+
+Installing PyFlame:
+https://pyflame.readthedocs.io/en/latest/installation.html
+
+ dpkg --list | grep gcc
+ sudo apt-add-repository ppa:trevorjay/pyflame
+ sudo apt-get update
+ sudo apt-get install pyflame
+
+
+Using PyFlame
+https://pyflame.readthedocs.io/en/latest/usage.html
+
+pyflame -s 300 -r 0.01 -p 19299 > pf_hn0.out
+
+
+git clone https://github.com/brendangregg/FlameGraph.git
+cd FlameGraph
+cat pf_hn0.out | ./flamegraph.pl > pf_hn0.svg

@@ -1,0 +1,7 @@
+Command to backup Ambari database is wrong:
+https://ambari.apache.org/current/installing-hadoop-using-ambari/content/ambari-chap11-1.html
+
+pg_dump -U ambari ambari > ambari.sql
+and then enter password as "bigdata"
+pg_dump -U mapred ambarirca > ambarirca.sql
+and then enter password as "ambarirca"

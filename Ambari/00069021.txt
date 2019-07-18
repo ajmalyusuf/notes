@@ -1,0 +1,135 @@
+00069021.txt
+
+
+
+1) Check if Java is JDK 1.7 or above
+2) Record the host location of Ambari Metrics components (Collector)
+3) Check if any changes are there in /var/lib/ambari-server/ambari-env.sh (compare with .rmpsave)
+4) Stop Ambari Metrics
+5) Copy/Move  /etc/yum.repos.d/ambari.repo to another location
+6) Check Firewall is disabled
+service iptables status
+service ntpd status
+7) Take a backup of Ambari DB
+# service postgresql status
+# pg_dump -U ambari ambari > ambari.sql (Password: bigdata)
+# pg_dump -U mapred ambarirca > ambarirca.sql (Password: mapred)
+
+Ambari Default - Postgres
+Hive Default - MySQL
+Oozie Default - Derby
+
+ambari-server stop
+
+=>All Machines
+ambari-agent stop
+wget -nv http://public-repo-1.hortonworks.com/ambari/centos6/2.x/updates/2.2.0.0/ambari.repo -O /etc/yum.repos.d/ambari.repo
+
+yum clean all
+yum info ambari-server
+=> Check for version to be 2.2
+yum upgrade ambari-server
+=>
+	Updated:
+   		ambari-server.noarch 0:2.2.0-111 
+	Complete!
+
+=>All Machines
+yum upgrade ambari-agent
+rpm -qa | grep ambari-agent
+
+=>Ambari Host
+ambari-server upgrade
+ambari-server start
+
+=>All Machines
+ambari-agent start
+
+============================
+/etc/ambari-server/conf/ambari.properties
+
+
+Backout instructions: 
+
+1) Back up your configuration file at /etc/ambari-server/conf/ambari.properties 
+2) Execute ambari-server stop on Ambari-server node 
+3) Execute ambari-agent stop on all ambari-agent node 
+4) Replace all /etc/yum.repo.d/ambari.repo with the previous version of repo 
+5) Execute 'yum downgrade ambari-server' on ambari-server node 
+6) Execute 'yum downgrade ambari-agent' on ambari-agent node 
+7) Replace the backend database by your backup. 
+8) Execute 'ambari-server start' 
+9) Execute 'ambari-agent start' 
+
+i.e. During the start up of ambari-server, it may or may not fail with the following message: 
+ambari-server start 
+Using python /usr/bin/python2.6 
+Starting ambari-server 
+ERROR: Exiting with exit code -1. 
+REASON: DB Name property not set in config file. 
+- If this is a new setup, then run the "ambari-server setup" command to create the user 
+- If this is an upgrade of an existing setup, run the "ambari-server upgrade" command. 
+Refer to the Ambari documentation for more information on setup and upgrade. 
+
+In this case, please replace /etc/ambari-server/conf/ambari.properties with your backup at step 1 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+/etc/ambari-server/conf/ambari.properties
+/var/lib/ambari-server/ambari-env.sh
+/var/lib/ambari-agent/ambari-env.sh
+
+check /usr/lib/ambari-server
+check /usr/lib/python2.6/site-packages/ambari-server
+======================================================
+
+yum list available |grep -i ambari-agent
+
+yum list installed |grep -i ambari-server
+yum list installed |grep -i ambari-agent
+yum list installed |grep -i ambari-metrics
+====================================
+Ambari Server port listerning:
+netstat -anop | grep 8441
+===============================
+# service iptables status
+To Disable Firewall:
+# service iptables save
+# service iptables stop
+# chkconfig iptables off
+
+==============================
+ENABLE DEBUG mode:
+Ambari Agent : /etc/ambari-agent/conf/ambari-agent.ini and change loglevel = INFO to loglevel = DEBUG
+Ambari Server : /etc/ambari-server/conf/log4j.properties and change "log4j.rootLogger=INFO" to "log4j.rootLogger=DEBUG"
+=============================
+Reinstall Ambari:
+yum erase both ambari-agent ambari-server
+rm -rf usr/lib/python2.6/site-packages/ambari-agent
+rm -rf usr/lib/python2.6/site-packages/ambari-server
+
+
+Another quick check, can you let us know if the broken node uses same python version as the other nodes ? is it Python 2.6 ? 
+
+We can also give a try by cleaning up all old Ambari-Server and agent related files, and re-installing again. Please see following steps : 
+- yum erase both ambari-agent, and ambari-server if it's still installed 
+- rm -rf usr/lib/python2.6/site-packages/ambari-agent , and ambari-server 
+- mv /var/lib/ambari-agent to /tmp 
+- yum install ambari-agent 
+
+I found the problem. In usr/lib/python2.6/site-packages there are some symlinks that point to a path from ambari-server which are not removed when you yum remove ambari-server. I had to remove the below symlinks and reinstall ambari-agent and now it is working. Thanks for you help! 
+lrwxrwxrwx 1 root root 41 Apr 23 11:18 ambari_commons -> /usr/lib/ambari-server/lib/ambari_commons 
+lrwxrwxrwx 1 root root 40 Apr 23 11:18 ambari_jinja2 -> /usr/lib/ambari-server/lib/ambari_jinja2
+
+
+	
+PROBLEM :  Heartbeat lost due to Ambari-agent error
+
+SYPTOM : the error message in ambari-agent log reads :  "Unable to connect to: https://<ambari-server>:8441/agent/v1/register/<host_FQDN> "
+
+ROOT CAUSE : possible mismatch between ambari-agent and ambari-server versions . Verify by using "#rpm -qa" command. 
+
+RESOLUTION : Clean up all Ambari related bits in the hosts, and re-install :
+-Uninstall the old Ambari applications :  yum erase  ambari-agent ambari-server if it's still installed , or yum upgrade ambari-agent ambari-server 
+-Remove the old package files :  rm -rf usr/lib/python2.6/site-packages/ambari-agent , and rm -rf usr/lib/python2.6/site-packages/ambari-server 
+-Back up the old ambari files if preferred :  mv /var/lib/ambari-agent /tmp 
+-Reinstall the packages :  yum install ambari-agent ambari-server

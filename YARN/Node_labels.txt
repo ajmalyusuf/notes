@@ -1,0 +1,45 @@
+Node_labels.txt
+
+Case # 00036517
+https://na9.salesforce.com/500E000000HxPOD?srPos=0&srKp=00a
+
+
+It turns out that the behavior we witnessed on the webex with node label inheritance is working as designed. A child queue will only inherit the default-label-expression from a parent queue if the child queue's accessible-node-labels are the same, or a superset of the accessible-node-labels on the parent. 
+
+In your case, the accessible-node-labels on the root was set to *. This means that to inherit root's node-label-expression, a queue would also have to have accessible-node-labels of *. Since your child queues don't have that, but specify specific labels, this does not qualify as a match or a superset, so the expression is not inherited. This is to prevent a queue from getting a default-label-expression for a set of labels it cannot access, rendering it unusable. 
+
+As an example, the following config will cause the queue 'test' to NOT inherit labels from root: 
+
+yarn.scheduler.capacity.root.accessible-node-labels=* 
+yarn.scheduler.capacity.root.default-node-label-expression=label1,label2 
+yarn.scheduler.capacity.root.test.accessible-node-labels=label1 
+
+Additionally, this config will also NOT inherit: 
+
+yarn.scheduler.capacity.root.accessible-node-labels=* 
+yarn.scheduler.capacity.root.default-node-label-expression=label1,label2 
+yarn.scheduler.capacity.root.test.accessible-node-labels=label1,label2 
+
+You might expect that to inherit, but when you are talking about '*', the child queue has to explicitly specify '*', because the meaning of that can change over time while the resourcemanager is running and you add/remove labels which can lead to inheritance changing w/o an explicit scheduler config change. This would lead to unpredictable results, so the '*' has to match exactly. 
+
+These configurations WILL inherit the label expression: 
+
+yarn.scheduler.capacity.root.accessible-node-labels=* 
+yarn.scheduler.capacity.root.default-node-label-expression=label1,label2 
+yarn.scheduler.capacity.root.test.accessible-node-labels=* 
+
+or 
+
+yarn.scheduler.capacity.root.accessible-node-labels=label1 
+yarn.scheduler.capacity.root.default-node-label-expression=label1 
+yarn.scheduler.capacity.root.test.accessible-node-labels=label1 
+
+Finally, I wanted to clear up some wrong information I provided on the call the other day related to Slider. I mentioned that Slider was tech preview in HDP 2.2 and this is actually not the case. Slider, and HBase on Slider is GA and supported in HDP 2.2. The docs for setting it up, and obtaining the Hbase package for slider deployment, are here: 
+
+http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.2.0/YARN_RM_v22/index.html#Item1.6.7 
+
+Slider will be the way forward for HBase on YARN (HOYA) on HDP and will allow for dynamic sizing of your HBase cluster as well as multiple HBase cluster instances. Ambari 1.7.0 also introduced a view for slider to provide an web interface to start/stop/view slider-deployed applications. 
+
+I'd appreciate it if you could pass this information on to the gentleman on the call who was asking about this. I apologize, I do not remember his name. 
+
+Please let me know if you have any other questions about this case, or if it's OK to close it. 

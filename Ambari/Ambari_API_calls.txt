@@ -1,0 +1,74 @@
+Ambari_API_calls.txt
+
+To get the details of KAFKA:
+curl -u admin:admin -X GET http://10.0.1.21:8080/api/v1/clusters/HDP22/services/KAFKA
+
+To Stop KAFKA services:
+curl -u admin:admin -H "X-Requested-By: ambari" -X PUT -d '{"RequestInfo":{"context":"Stop Service"},"Body":{"ServiceInfo":{"state":"INSTALLED"}}}' http://10.0.1.21:8080/api/v1/clusters/HDP22/services/KAFKA
+
+Remove a Service:
+curl -u admin:admin -H "X-Requested-By: ambari" -X DELETE  http://10.0.1.21:8080/api/v1/clusters/HDP22/services/KAFKA
+
+
+yum list installed | grep kafka
+kafka_2_2_8_0_3150.noarch                   0.8.1.2.2.8.0-3150.el6  @HDP-2.2
+kafka_2_3_2_0_2950.noarch                   0.8.2.2.3.2.0-2950.el6  @HDP-2.3.2.0
+ranger_2_3_2_0_2950-kafka-plugin.x86_64     0.5.0.2.3.2.0-2950.el6  @HDP-2.3.2.0
+
+yum remove kafka_2_2_8_0_3150.noarch kafka_2_3_2_0_2950.noarch ranger_2_3_2_0_2950-kafka-plugin.x86_64
+
+You may keep a copy of /etc/kafka
+
+
+
+
+
+1. Please take a backup of your Ambari Database. 
+
+2. 
+
+curl -u admin:admin -X GET -H "X-Requested-By: ambari" "http://<AMBARI_SERVER>:<PORT>/api/v1/clusters/<CLUSTER_NAME>/hosts/<HOSTNAME_FOR_HBASE_IN_AMBARI>/host_components" 
+
+This will list all the host_components for <HOSTNAME_FOR_HBASE_IN_AMBARI> which will probably be the FQDN 
+
+Here you should see HBASE_CLIENT, HBASE_MASTER and HBASE_REGIONSERVER 
+
+How many Regionservers did you have? and do they still show in Ambari on those machines? 
+
+Then you will need to run a delete: 
+
+curl -u admin:pass -X DELETE -H "X-Requested-By: ambari" http://<AMBARI_SERVER>:<PORT>/api/v1/clusters/<CLUSTER_NAME>/hosts/<HOSTNAME_FOR_HBASE_IN_AMBARI>/host_components/HBASE_MASTER
+
+Then cycle HBASE_MASTER for the components on that machine. 
+Obviously if you have more than 1 region server still showing in Ambari, you will need to change the hostname to get rid of these. 
+
+After that, then you will need to remove the service from Ambari: 
+
+curl -u admin:admin -X GET "<AMBARI_SERVER>:<PORT>/api/v1/clusters/<CLUSTER_NAME>/services/HBASE" 
+
+This will show you the HBase services which are configured and to remove them you follow the same process: 
+
+curl -u admin:pass -X DELETE -H "X-Requested-By: ambari" "http://<AMBARI_SERVER>:<PORT>/api/v1/clusters/<CLUSTER_NAME>/services/HBASE/components/HBASE_MASTER" 
+
+And cycle through HBASE_MASTER, HBASE_CLIENT, HBASE_REGIONSERVER 
+
+Then to remove the service: 
+
+curl -u admin:pass -X DELETE -H "X-Requested-By: ambari" "http://<AMBARI_SERVER>:<PORT>/api/v1/clusters/<CLUSTER_NAME>/services/HBASE" 
+
+
+
+Another Example:
+curl -u admin:admin -X DELETE -H "X-Requested-By: ambari" "http://n1-51-53.hdp.com:8080/api/v1/clusters/HDP230/hosts/n2-51-53.hdp.com/host_components/METRICS_MONITOR"
+curl -u admin:admin -X DELETE -H "X-Requested-By: ambari" "http://n1-51-53.hdp.com:8080/api/v1/clusters/HDP230/hosts/n1-51-53.hdp.com/host_components/METRICS_MONITOR"
+curl -u admin:admin -X DELETE -H "X-Requested-By: ambari" "http://n1-51-53.hdp.com:8080/api/v1/clusters/HDP230/hosts/n3-51-53.hdp.com/host_components/METRICS_MONITOR"
+
+curl -u admin:admin -X DELETE -H "X-Requested-By: ambari" "http://n1-51-53.hdp.com:8080/api/v1/clusters/HDP230/hosts/n3-51-53.hdp.com/host_components/METRICS_COLLECTOR"
+
+curl -u admin:admin -X GET -H "X-Requested-By: ambari" "http://n1-51-53.hdp.com:8080/api/v1/clusters/HDP230/services/AMBARI_METRICS"
+
+
+LInk to download the CLIENT CONFIG TAR file:
+============================================
+http://10.0.1.51:8080/api/v1/clusters/HDP230/services/HDFS/components/HDFS_CLIENT?format=client_config_tar
+

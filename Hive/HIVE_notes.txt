@@ -1,0 +1,16 @@
+HIVE notes:
+
+- Not suited for OLTP : does not offer real-time queries and row level updates
+- Used for append-only large data set (immutable data)
+- Works on MR framework and can use UDF, UDAF (UD Aggregate Func), UDTF (UD Table Func)
+
+Two main Components:
+1) HCatelog : Table and Storage Management layer on HDFS
+2) WebHcat : HTTP Rest API Service to run MR or HIVE Metadata Operartions
+
+Hive Debug:
+hive --hiveconf hive.root.logger=DEBUG,console
+
+
+Check if the ResourceManager process is
+running.

@@ -1,0 +1,16 @@
+Zookeeper_rmstore.txt
+
+/usr/hdp/2.3.2.0-2950/zookeeper/bin/zkCli.sh -server h<zookeeper_server>
+/usr/hdp/2.3.2.0-2950/zookeeper/bin/zkCli.sh -server hdp-m1.hw.com
+
+If Kerberized, use kinit before
+
+[zk: hdp-m1.hw.com(CONNECTED) 0] getAcl /rmstore/ZKRMStateRoot
+'world,'anyone
+: rwa
+'digest,'hdp-m1.hw.com:IHLqBTTz+/om7gdsxszp+M/e0KU=
+: cd
+[zk: hdp-m1.hw.com(CONNECTED) 1]
+
+
+

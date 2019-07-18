@@ -1,0 +1,6 @@
+yarn_application_notes.txt
+
+To get the logs for an application:
+yarn logs -applicationId application_1384264132710_0004 -appOwner <user> >> containerlogs.txt 
+
+Get the application_id from Resource Manger UI

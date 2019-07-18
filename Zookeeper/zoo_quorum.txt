@@ -1,0 +1,12 @@
+zoo_quorum.txt
+
+Deleteing / Adding Zookeeper may require changes in:
+
+ha.zookeeper.quorum - 
+hbase.zookeeper.quorum
+templeton.zookeeper.hosts
+yarn.resourcemanager.zk-address - 
+hive.zookeeper.quorum
+hive.cluster.delegation.token.store.zookeeper.connectString
+hadoop-registry.zk.quorum in YARN - 
+

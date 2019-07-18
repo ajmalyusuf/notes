@@ -1,0 +1,14 @@
+HUE_notes
+
+https://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.3.0/bk_hadoop-ha/content/ha-nn-deploy-hue.html
+http://dev.hortonworks.com.s3.amazonaws.com/HDPDocuments/HDP2/HDP-2.1.2/bk_system-admin-guide/content/ch_hadoop-ha-3a.html
+
+Kerberos:
+http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.1.5/bk_Security_Guide/content/rpm-chap14-1-4.html
+
+My case with Walmart:
+https://hortonworks.my.salesforce.com/500E000000X5IUR
+
+
+Kenny Case on HTTPFS
+https://hortonworks.my.salesforce.com/500E000000BxTrL?srPos=0&srKp=00a

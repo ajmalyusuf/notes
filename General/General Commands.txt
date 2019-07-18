@@ -1,0 +1,14 @@
+General Commands:
+
+how to check the hadoop version?
+rpm -qa | grep hadoop
+
+Creating softlinks:
+ln -s <source_file/dir> <target_file/dir>
+
+Resolving a link command:
+readlink <link_file/dir>
+
+Where the PID file stored for hadoop components:
+/var/run/<component_name> directory
+

@@ -1,0 +1,9 @@
+
+
+[10:42 AM] Diana Prichici: hey team. is this the correct way to raise the ulimit on the namenode?  		hadoop-env.sh:if [ "$command" == "namenode" ]; then ulimit -n 128000; fi  		I can't find the documentation, and was under the impression that limits.conf was the way to go
+[10:44 AM] Darwin Traver: @DianaPrichici /etc/security/limits.d/hdfs.conf   		and inside that file: 		hdfs  - nofile 128000 		hdfs  - nproc  65536
+[10:44 AM] Diana Prichici: super, thanks @Darwin
+[10:44 AM] Darwin Traver: in case you are hitting the hard limits for some reason
+[10:45 AM] Diana Prichici: it looks like it. I don't have the log from the namenode starting, but it eventuallly dies with "Too many open files". They raised the limit as I described, I was wondering whether that does anything at all
+[10:47 AM] Darwin Traver: suggestion to check the ulimits via:
+		cat /proc/$(cat /var/run/hadoop/hdfs/hadoop-hdfs-namenode.pid)/limits

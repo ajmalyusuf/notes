@@ -1,0 +1,17 @@
+ambari_postgress_upgrade_tests.txt
+
+select repo_version_id, stack_id, version, display_name from repo_version ;
+
+select * from host_version ;
+
+select * from host_version ;
+
+
+List tables in postgres
+
+\dt
+
+Quit:
+
+\q
+

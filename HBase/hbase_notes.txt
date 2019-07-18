@@ -1,0 +1,27 @@
+hbase_notes:
+
+zookeeper.znode.parent = /hbase-unsecure (by default)
+if there are exception as "znode not found", then there may be mismatch in this property
+
+To check the files / records of zookeeper:
+hbase zkcli
+
+Nine most key properties:
+1) zookeeper.session.timeout : Time zooker waits after heartbeat is lost before issuing shutdown. Default is 30 sec
+2) hbase.regionserver.handler.count : Number of threads in the 'regionserver' JVM to accept and process a task. Default is 60
+3) hbase.hregion.max.filesize - Region file size. Hbase will allow a region store file to grow. HDP default is 10 GB
+4) hbase.hregion.memstore.flush.size - Memstore size in heap for a column family. The buffer before flushing data to disk.  Default 134 MB
+5) hbase.regionserver.global.memstore.lowerLimit - Fraction of heap assigned to all
+6)
+7)
+8)
+9)
+10)
+
+hbase.coprocessor.abortonerror=false to prevent regionserver dying/crash due to buggy or misconfigured coprocessor
+
+balancer for HBase for data locality
+
+hbase hbck - tool:
+Parameters :
+-fixMeta, -fixAssignments, -repair, -repairHoles, -fixVersion

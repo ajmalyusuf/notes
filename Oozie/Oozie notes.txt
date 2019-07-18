@@ -1,0 +1,32 @@
+Oozie notes:
+
+Changes from 2.1 to 2.2 :
+
+In 2.1 the the haddop fonfs (/etc/hadoop/conf), was packed and sent to Oozie Server and loaded to oozie launcher job.
+In 2.1, this the hadoop conf should be manually put to the sharelib path in the HDFS - /user/oozie/share/lib
+and defined in oozie.service.WorkflowAppService.system.libpath
+
+When yarn-site properties are changed from Ambari, it does not automatically upload the changed xml to HDFS. It has to be done manually
+
+
+
+
+Check oozie connection:
+curl -i -negotiate -u foo:bar -X GET http://hdp-s1.hw.com:11000/oozie/v1/admin/build-version
+
+The above did not work - below worked:
+
+curl --negotiate -u foo:bar -X GET http://hdp-s1.hw.com:11000/oozie/v1/admin/build-version
+
+
+
+Read this :
+
+https://community.hortonworks.com/questions/16765/tez-job-started-by-oozie-fails-with-delegation-tok.html
+
+
+
+Working with sharelib:
+oozie admin -oozie http://n1-c02-205.hdp.com:11000/oozie -shareliblist
+
+

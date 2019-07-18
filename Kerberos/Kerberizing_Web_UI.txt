@@ -1,0 +1,141 @@
+Kerberizing Web UI
+=======================================
+https://na9.salesforce.com/kA2E0000000LZsJ?srKp=ka2&lang=en_US&srPos=1
+
+SYMPTOM: Will get the following error message when accessing the component's webui via your local machine's web browser
+
+Permission denied when trying to open /webhdfs/v1/?op=LISTSTATUS: GSSException: Failure unspecified at GSS-API level (Mechanism level: Specified version of key is not available (44))
+
+ROOT CAUSE: the local machine where the browser launches needs the tgt to request for the service it needs. 
+
+SOLUTION: 
+
+On your local machine where your browser is installed, did you do the following? 
+
+1) If the local workstation is linux/mac, copy the krb5.conf file from the KDC server to your local workstation machine (where your browser is installed) /etc folder.
+
+2) chmod 644 /etc/krb5.conf (if necessary) 
+
+3) Setup the MacOS/Linux user principal in the KDC db (user that will be running the kinit) 
+
+For example. 
+
+addprinc -randkey jimmy@EXAMPLE.COM
+
+
+4) On your local workstation (where your browser is installed) run the kinit command as the local user. 
+
+For example. 
+
+kinit jimmy@EXAMPLE.COM
+
+5) - Configure Safari/Chrome/firefox/IE to work with SPNEGO krbtgt and browse the web UI. (eg:http://www.microhowto.info/howto/configure_chromium_to_authenticate_using_spnego_and_kerberos.html) 
+
+Safari automatically uses SPNEGO krbtgt, no additional configuration needed. Make sure you close all current sessions before attempting step 4) 
+
+6) Try to access the NN directory browser UI after restart of the web browser
+
+
+FIREFOX:
+http://www.microhowto.info/howto/configure_firefox_to_authenticate_using_spnego_and_kerberos.html
+Chrome:
+http://www.microhowto.info/howto/configure_chromium_to_authenticate_using_spnego_and_kerberos.html
+
+==============================
+SYMPTOM:
+
+After enabling kerberos on the falcon server, falcon web UI cannot be accessed with error: 401 authentication required
+
+ROOT CAUSE:
+
+Education - Configuration
+The local host where web browser is running doesn't have required kerberos ticket, so the web browser cannot be authenticated to oozie server.
+
+RESOLUTION:
+
+On the local host, where web browser is running:
+1. Configure krb5.conf  with correct hadoop domain info.
+2. Run kinit to obtain a kerberos ticket from KDC server.
+3. Configure web browser to use the kerberos ticket, which depends on different type of web browser (More details on http://crimsonfu.github.io/2012/06/22/kerberos-browser.html).
+==============================
+After setting up kerberos, webHDFS returns an error: GSSException: Defective token detected
+PROBLEM
+After setting up kerberos, customer cannot access webhdfs through its UI: 
+ 
+HTTP ERROR 403 
+Problem accessing /webhdfs/v1. Reason:\ 
+GSSException: Defective token detected (Mechanism level: GSSHeader did not find the right tag)
+
+
+We initially found that his kerberos ticket has expired which we renewed via the kinit command. After this the following command worked: 
+
+curl -i --negotiate -u : http://<IP>:50070/webhdfs/v1/?op=LISTSTATUS 
+
+But they are not able to use it though a browser. 
+
+ROOT CAUSE
+The issue is the SPNEGO token for the browser.
+ 
+RESOLUTION
+the browser must be enabled for SPNEGO support. This can often be done using the command line. 
+
+Below is a URL to a site explaining how to do this for chromium. On the same page are links to enable SPNEGO support in Firefox. 
+
+http://www.microhowto.info/howto/configure_chromium_to_authenticate_using_spnego_and_kerberos.html 
+ 
+BACKGROUND/LINKS
+
+ 
+KEYWORDS/TAGS
+kerberos browser webHDFS chrome chomium firefox
+==============================
+https://na9.salesforce.com/500E000000H9kg3
+==============================
+After Kerberos enabled, get 401 error when accessing Webhcat web UI
+SYMPTOM: 
+
+After Kerberos is enabled, to verify webhcat works as expect, get http 401 error from accessing webhcat web UI, for example: 
+http://sehdp.test.com:50111/templeton/v1/status
+
+ROOT CAUSE:
+
+This is working as expected, because webhcat requires the user to get a tgt from KDC server first.
+
+WORKAROUND:
+
+To verify webhcat works as expected, use the command line t
+
+# kinit <valid principal>
+# curl --negotiate -i -u : 'http://sehdp.test.com:50111/templeton/v1/status'
+
+You should get a 200 ok return similar to:
+
+HTTP/1.1 200 OK
+Content-Type: application/json
+Transfer-Encoding: chunked
+Server: Jetty(7.6.0.v20120127)
+==============================
+How to configure supported browsers for Kerberos and NTLM
+https://ping.force.com/Support/PingIdentityArticle?id=kA3400000008RiECAU
+https://ping.force.com/Support/PingFederate/Integrations/How-to-configure-supported-browsers-for-Kerberos-NTLM
+==============================
+Kerberos Authentication with your Browser
+http://crimsonfu.github.io/2012/06/22/kerberos-browser.html
+
+Chrome MAC SPNEGO enabling :
+./"Google Chrome" --auth-server-whitelist="*.hw.com"
+http://www.microhowto.info/howto/configure_chromium_to_authenticate_using_spnego_and_kerberos.html
+
+Firefox SPNEGO configuration:
+about:config -> search for trusted-uris
+Edit the String value for:
+network.negotiate-auth.trusted-uris
+as "http://hdp-m1.hw.com,http://hdp-s1.hw.com" OR ".hw.com" (please note NO * is needed as Chrome)
+https://ping.force.com/Support/PingFederate/Integrations/How-to-configure-supported-browsers-for-Kerberos-NTLM
+
+Curl test for SPNEGO
+curl -i -v --negotiate -u: "http://kerhdp224-1.novalocal:50070/webhdfs/v1/?op=LISTSTATUS"  (From Jimmy)
+curl --negotiate -u foo:bar -X GET http://<oozie_server_host>:11000/oozie/v1/admin/build-version
+
+Kerberos Commands:
+https://na9.salesforce.com/articles/en_US/FAQ/KERBEROS-List-of-common-MIT-Kerberos-commands?popup=true

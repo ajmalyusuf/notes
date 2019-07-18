@@ -1,0 +1,49 @@
+Hive_alter_table
+
+https://hortonworks-community.force.com/customers/articles/en_US/Issue/Alter-table-fails-with-error-Unable-to-alter-table-Unable-to-access-old-location-hdfs
+
+
+# Main Database location
+sudo -u hdfs hdfs dfs -mkdir -p /data/hive/databases
+sudo -u hdfs hdfs dfs -chmod 755 /data
+sudo -u hdfs hdfs dfs -chmod 755 /data/hive
+sudo -u hdfs hdfs dfs -chmod 777 /data/hive/databases
+
+# Temporary Location to export and then import
+sudo -u hdfs hdfs dfs -mkdir -p /tmp/temp_export_import
+sudo -u hdfs hdfs dfs -chmod 777 /tmp/temp_export_import
+
+# Login to Hive
+hive
+hive> set hive.cli.print.current.db=true;
+hive (default)>
+
+
+# Create database, table and insert few values
+hive (default)> create database CAPITAL_DB location '/data/hive/databases/CAPITAL.db';
+hive (default)> use CAPITAL_DB;
+
+hive (CAPITAL)> create table CAPITAL_DB.old_table(id int);
+hive (CAPITAL_DB)> show tables;
+
+hive (CAPITAL)> insert into table CAPITAL_DB.old_table values (100);
+hive (CAPITAL)> insert into table CAPITAL_DB.old_table values (200);
+hive (CAPITAL)> insert into table CAPITAL_DB.old_table values (500);
+
+hive (CAPITAL_DB)> hive (CAPITAL_DB)> select * from CAPITAL_DB.old_table;
+
+# Confirm the location of "old_table"
+hive (CAPITAL_DB)> describe formatted old_table;
+
+# Rename using export and import
+
+hive (CAPITAL)> export table old_table to '/tmp/temp_export_import';
+hive (CAPITAL)> import table new_table from '/tmp/temp_export_import';
+
+# Check the tables
+
+hive (CAPITAL)> show tables;
+
+# You should see old and new tables; both will be in the CAPITAL database and at the original location
+
+# You may verify the integrity of the data and drop the "old_table"

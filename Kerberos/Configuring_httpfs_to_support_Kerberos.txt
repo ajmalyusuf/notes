@@ -1,0 +1,223 @@
+Configuring_httpfs_to_support_Kerberos
+
+PROBLEM:
+The cluster has been secured with Kerberos using Ambari.  Ambari, however, does not automate the configuration of HttpFS to support Kerberos.
+
+RESOLUTION:
+The following assumptions are made in this How-To:
+1) HttpFS has been installed, configured, and verified to be working prior to enabling Kerberos.
+2) Kerberos was enabled using Ambari and an MIT KDC.
+
+Create the Keytabs:
+
+Both HttpFS and HTTP service principals must be created for HttpFS if they do not already exist. 
+
+Create the HttpFS keytab using kadmin with the following syntax: 
+
+$kadmin
+kadmin: addprinc -randkey httpfs/<fully.qualified.domain.name>@<EXAMPLE-REALM> 
+
+where: fully.qualified.domain.name is the host where the HttpFS server is running EXAMPLE-REALM is the name of your Kerberos realm
+
+For example:
+
+$kadmin
+kadmin: addprinc -randkey httpfs/fully.qualified.domain.name@EXAMPLE-REALM.COM
+
+Next, create a HTTP service user principal, if one does not already exist, using similar syntax as above:
+
+$kadmin
+kadmin: addprinc -randkey HTTP/fully.qualified.domain.name@EXAMPLE-REALM.COM
+  
+NOTE: The HTTP/ component of the HTTP service user principal must be upper case as shown in the syntax example above!
+
+
+Create the keytab files with both principals using kadmin:
+
+For example:
+
+kadmin -q "ktadd -k /etc/security/keytabs/httpfs.service.keytab httpfs/fully.qualified.domain.name@EXAMPLE-REALM.COM"
+
+NOTE: The spnego ketyab below only needs to be created if it does not already exist on the node running HttpFS!
+
+kadmin -q "ktadd -k /etc/security/keytabs/spnego.service.keytab HTTP/fully.qualified.domain.name@EXAMPLE-REALM.COM"
+
+
+Merge the two keytab files into a single keytab file:
+
+The ktutil command will assist with creating the single keytab file.
+
+$ ktutil
+ktutil: rkt /etc/security/keytabs/httpfs.service.keytab
+ktutil: rkt /etc/security/keytabs/spnego.service.keytab
+ktutil: wkt /etc/security/ketyabs/httpfs-http.service.keytab
+ktutil: quit
+
+The above will create a file named httpfs-http.service.keytab in /etc/security/keytabs.
+
+
+Test that the merged keytab file works. For example:
+
+$klist -kt /etc/hadoop-httpfs/conf/httpfs-http.service.keytab
+Keytab name: FILE:/etc/hadoop-httpfs/conf/httpfs-http.service.keytab
+KVNO Timestamp         Principal
+---- ----------------- --------------------------------------------------------
+   3 09/02/15 11:38:52 httpfs/fully.qualified.domain.name@EXAMPLE-REALM.COM
+   3 09/02/15 11:38:52 httpfs/fully.qualified.domain.name@EXAMPLE-REALM.COM
+   3 09/02/15 11:38:52 httpfs/fully.qualified.domain.name@EXAMPLE-REALM.COM
+   3 09/02/15 11:38:52 httpfs/fully.qualified.domain.name@EXAMPLE-REALM.COM
+   3 09/02/15 11:38:52 httpfs/fully.qualified.domain.name@EXAMPLE-REALM.COM
+   3 09/02/15 11:38:52 HTTP/fully.qualified.domain.name@EXAMPLE-REALM.COM
+   3 09/02/15 11:38:52 HTTP/fully.qualified.domain.name@EXAMPLE-REALM.COM
+   3 09/02/15 11:38:52 HTTP/fully.qualified.domain.name@EXAMPLE-REALM.COM
+   3 09/02/15 11:38:52 HTTP/fully.qualified.domain.name@EXAMPLE-REALM.COM
+   3 09/02/15 11:38:52 HTTP/fully.qualified.domain.name@EXAMPLE-REALM.COM
+
+
+Change the ownership and permissions of the httpfs-http.service.keytab:
+
+$chown httpfs:hadoop /etc/security/keytabs/httpfs-http.service.keytab
+$chmod 400 /etc/security/keytabs/httpfs-http.service.keytab
+
+
+Edit the HttpFS server httpfs-site.xml configuration file in the HttpFS configuration directory by setting the following properties:
+
+httpfs.authentication.type: kerberos
+httpfs.hadoop.authentication.type: kerberos
+httpfs.authentication.kerberos.principal: HTTP/<HTTPFS-HOSTNAME>@<YOUR-REALM.COM>
+httpfs.authentication.kerberos.keytab: /etc/hadoop-httpfs/conf/httpfs-http.keytab
+httpfs.hadoop.authentication.kerberos.principal:    httpfs/<HTTPFS-HOSTNAME>@<YOUR-REALM.COM>
+httpfs.hadoop.authentication.kerberos.keytab: /etc/security/keytabs/httpfs-http.keytab
+httpfs.authentication.kerberos.name.rules:  Use the value configured for 'hadoop.security.auth_to_local' in  Ambari's HDFS Configs under "Advanced Core-Site". 
+
+An example httpfs-site.xml is listed below, with the relevant kerberos information highlighted in red:
+
+<configuration>
+
+  <!-- HUE proxy user setting -->
+  <property>
+    <name>httpfs.proxyuser.hue.hosts</name>
+    <value>*</value>
+  </property>
+  <property>
+    <name>httpfs.proxyuser.hue.groups</name>
+    <value>*</value>
+  </property>
+
+  <property>
+    <name>httpfs.hadoop.config.dir</name>
+    <value>/etc/hadoop/conf</value>
+  </property>
+
+  <property>
+    <name>httpfs.authentication.type</name>
+    <value>kerberos</value>
+  </property>
+  <property>
+    <name>httpfs.hadoop.authentication.type</name>
+    <value>kerberos</value>
+  </property>
+  <property>
+    <name>httpfs.authentication.kerberos.principal</name>
+    <value>HTTP/edge.example.com@EXAMPLE-REALM.COM</value>
+  </property>
+  <property>
+    <name>httpfs.authentication.kerberos.keytab</name>
+    <value>/etc/security/keytabs/httpfs-http.service.keytab</value>
+  </property>
+  <property>
+    <name>httpfs.hadoop.authentication.kerberos.principal</name>
+    <value>httpfs/edge.example.com@EXAMPLE-REALM.COM</value>
+  </property>
+  <property>
+    <name>httpfs.hadoop.authentication.kerberos.keytab</name>
+    <value>/etc/security/keytabs/httpfs-http.service.keytab</value>
+  </property>
+  <property>
+    <name>httpfs.authentication.kerberos.name.rules</name>
+  <value>RULE:[1:$1@$0](ambari-qa-examplecluster@EXAMPLE-REALM.COM)s/.*/ambari-qa/
+RULE:[1:$1@$0](hbase-examplecluster@EXAMPLE-REALM.COM)s/.*/hbase/
+RULE:[1:$1@$0](hdfs-examplecluster@EXAMPLE-REALM.COM)s/.*/hdfs/
+RULE:[1:$1@$0](.*@EXAMPLE-REALM.COM)s/@.*//
+RULE:[2:$1@$0](amshbase@EXAMPLE-REALM.COM)s/.*/ams/
+RULE:[2:$1@$0](amszk@EXAMPLE-REALM.COM)s/.*/ams/
+RULE:[2:$1@$0](dn@EXAMPLE-REALM.COM)s/.*/hdfs/
+RULE:[2:$1@$0](falcon@EXAMPLE-REALM.COM)s/.*/falcon/
+RULE:[2:$1@$0](hbase@EXAMPLE-REALM.COM)s/.*/hbase/
+RULE:[2:$1@$0](hive@EXAMPLE-REALM.COM)s/.*/hive/
+RULE:[2:$1@$0](jhs@EXAMPLE-REALM.COM)s/.*/mapred/
+RULE:[2:$1@$0](jn@EXAMPLE-REALM.COM)s/.*/hdfs/
+RULE:[2:$1@$0](knox@EXAMPLE-REALM.COM)s/.*/knox/
+RULE:[2:$1@$0](nfs@EXAMPLE-REALM.COM)s/.*/hdfs/
+RULE:[2:$1@$0](nm@EXAMPLE-REALM.COM)s/.*/yarn/
+RULE:[2:$1@$0](nn@EXAMPLE-REALM.COM)s/.*/hdfs/
+RULE:[2:$1@$0](oozie@EXAMPLE-REALM.COM)s/.*/oozie/
+RULE:[2:$1@$0](rm@EXAMPLE-REALM.COM)s/.*/yarn/
+RULE:[2:$1@$0](yarn@EXAMPLE-REALM.COM)s/.*/yarn/
+RULE:[2:$1@$0]([nd]n@.*)s/.*/hdfs/
+RULE:[2:$1@$0]([rn]m@.*)s/.*/yarn/
+RULE:[2:$1@$0](hm@.*)s/.*/hbase/
+RULE:[2:$1@$0](jhs@.*)s/.*/mapred/
+RULE:[2:$1@$0](rs@.*)s/.*/hbase/
+DEFAULT </value>
+  </property>
+
+</configuration>
+
+Restart the HttpFS server to have the configuration changes take effect:
+
+$/etc/init.d/hadoop-httpfs restart
+
+or 
+
+$service hadoop-httpfs restart
+
+
+Test the connection:
+
+In the example below, curl is used by the user "sample_user" to connect to HttpFS and get a successful status listing of the /user/sample_user directory in HDFS.  
+
+$ kinit sample_user
+password: 
+
+$ curl -v --negotiate -u:sample_user -X GET 'http://edge.example.com:14000/webhdfs/v1/user/sample_user/?op=LISTSTATUS'
+
+* About to connect() to edge.example.com port 14000 (#0)
+*   Trying 192.168.0.115... connected
+* Connected to edge.example.com (192.168.0.115) port 14000 (#0)
+> GET /webhdfs/v1/user/sample_user/?op=LISTSTATUS HTTP/1.1
+> User-Agent: curl/7.19.7 (x86_64-redhat-linux-gnu) libcurl/7.19.7 NSS/3.16.2.3 Basic ECC zlib/1.2.3 libidn/1.18 libssh2/1.4.2
+> Host: edge.example.com:14000
+> Accept: */*
+>
+< HTTP/1.1 401 Unauthorized
+< Server: Apache-Coyote/1.1
+< WWW-Authenticate: Negotiate
+< Set-Cookie: hadoop.auth=; Path=/; Expires=Thu, 01-Jan-1970 00:00:00 GMT; HttpOnly
+< Content-Type: text/html;charset=utf-8
+< Content-Length: 997
+< Date: Thu, 03 Sep 2015 18:22:13 GMT
+<
+* Ignoring the response-body
+* Connection #0 to host edge.example.com left intact
+* Issue another request to this URL: 'http://edge.example.com:14000/webhdfs/v1/user/sample_user/?op=LISTSTATUS
+'
+* Re-using existing connection! (#0) with host edge.example.com
+* Connected to edge.example.com (192.168.0.115) port 14000 (#0)
+* Server auth using GSS-Negotiate with user ''
+> GET /webhdfs/v1/user/sample_user/?op=LISTSTATUS HTTP/1.1
+> Authorization: Negotiate YIIE6AYJKoZIhvcSAQICAQBuggTXMIIE06ADAgEFoQMCAQ6iBwMFAAAAAACjggP+YYID+jCCA/agAwIBBaEPGw1BRC5CQVhMRVkuQ09NoiIwIKADAgEDoRkwFxsESFRUUBsPZWRnZS5iYXhsZXkuY29to4IDuDCCA7SgAwIBF6EDAgEBooIDpgSCA6KNBFhf7MOJ/jOig77hkwXrvm32sn+dYyvwqhasGfq1T37IiGH5NwG66bbmsVSdaTTeDsnRUnTOmYRrlBTzZ+A5MTPQ1QNI79mBwjR2nMtB/lpo2ZDFwehGwi3l6q80U2Fks6JwIiJUL4XdEhXJ9nbTt7ixpbQ0edQ7qxGmYxoXbnTtfIFq4TMPxECqySOJgd7SIrOC+V6K8J2oR4dmwIIzgKRkimwm1XalIjCTT9RU1Qrqdzoum+NxwV8gtWnEs5zyxec4gPfPuRfr1Ak7qXAErF7sE8VYBQ+TFuH0vCk3JbXg82UnoIF/4UO6sRDjOJOxOSXwHdEfKgN24fAMiTWndtorXA2CzhTvpTdCw3hKls2pV44iyFkewr9Iylr6Vp+fvn8o8Bx+2O2yWRD/HmFmgqJaR97CR0DMArzW1lhRRQ12dcBB1qPJ2/5ZxTcDWOxQgRKJ87anIkzZ5jt241dNJ1sCepfSDk3KASJVA7nQH3MjFb0gOyLVugAXsPDupIoU0OTaBKBl45eyX879bjn4Ih0v75o0RM7ik8msvUM+XXjqkMkdTU86kydKfqxQANkqrpPeA42Z+jEHzxwrsCEpdyhbFIJIejgni+e9OURi5ZBOHVQPMW2yUidjeDJUemGk0Ez6t0egl7jjlH3MXwjzgXV997LfIQOuB5Gi7RvHPCpRK1bm3qExA7XWbBfiVRZxHdj3kxzwiZD7L27kgN4MxyLhUo7GrrvRG8fwYIR68UwWGwgYtYSG1MlfB4S1VNtQbR5T88poeBJb0a+91GxxeWY+YpquE9VK8uGBK9TTuAe+tuL1+H7T+Bboe2O940WcYXZOHe5m0v4jyZfUQKa/y+30XaFsIidbTSjhDVh2nT0lVeewWYUfAKTZhxb4JdkcZLP8D67NiX2ZixET3eoXzG8LX97LTK1r9d7YEnUu11MLYyao01fcnOHfwZ9ZKkvjC1h9YoNHCZJQjdfO/HFAbX1OqtZxGCFNI7J+XqN5iNQEtmYwbESefgPDzw6VIpcQmCMXPzvPbbfro2kqgmAj/G0ACswhtcMRcG55W5bQyXhHsgYVpKm7aEJldV/gKP5DqEsGbR8SKzE+XYvCsrb10/jem6I0vGoaPxVyNvL5GxySz633UoPSZT8fD3w0Wp6CNhUTK2CKkzH4fS2N2FO2dTfJtgKKeg4/5c+gPQTzTY/xyT674XBYUGQC376n0cHq3RHlbG6gGu9cCjTKSRJZSlKkgbswgbigAwIBF6KBsASBreCw7MNpU2wxeCh+L+UiyI/rr/o/Th2PN+HJcsWNWhH5icNYanEwFZuPIA+XUpctGkxgE6UXRUDNIMXDTBq71kV2CxoJCapMynjPdOl0ZERBCPxC/jrdaj5SAyxlEy/bf/WCcUgLXzkpCuBhLrfwV2Xta/uEX7F7So/RkZgII915ZZHfYTIDqwlqD7NWYIPIkr5yxGIewgxLrxGk5Vw1AKgOXtTkhaB034xvfXGd
+> User-Agent: curl/7.19.7 (x86_64-redhat-linux-gnu) libcurl/7.19.7 NSS/3.16.2.3 Basic ECC zlib/1.2.3 libidn/1.18 libssh2/1.4.2
+> Host: edge.example.com:14000
+> Accept: */*
+>
+< HTTP/1.1 200 OK
+< Server: Apache-Coyote/1.1
+< Set-Cookie: hadoop.auth="u=sample_user&p=sample_user@AD.EXAMPLE-REALM.COM&t=kerberos&e=1441340533581&s=IVZn7q95Y6U9iRnMUUfVVHaU9uA="; Path=/; Expires=Fri, 04-Sep-2015 04:22:13 GMT; HttpOnly
+< Content-Type: application/json
+< Transfer-Encoding: chunked
+< Date: Thu, 03 Sep 2015 18:22:13 GMT
+<
+{"FileStatuses":{"FileStatus":[{"pathSuffix":".Trash","type":"DIRECTORY","length":0,"owner":"sample_user","group":"sample_user","permission":"700","accessTime":0,"modificationTime":1441260000270,"blockSize":0,"replication":0},{"pathSuffix":"Screen Shot 2015-08-19 at 11.09.48 AM.png","type":"FILE","length":156284,"owner":"sample_user","group":"sample_user","permission":"644","accessTime":1440855308971,"modificationTime":1440855310118,"blockSize":134217728,"replication":3}]}}
+* Connection #0 to host edge.example.com left intact
+* Closing connection #0

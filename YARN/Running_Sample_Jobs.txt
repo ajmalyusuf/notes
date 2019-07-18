@@ -1,0 +1,4 @@
+Running_Sample_Jobs.txt
+
+hadoop jar /usr/hdp/current/hadoop-yarn-client/hadoop-yarn-applications-distributedshell.jar -shell_command "sleep 60" -jar /usr/hdp/current/hadoop-yarn-client/hadoop-yarn-applications-distributedshell.jar -num_containers 3 -queue a1 -node_label_expression x
+

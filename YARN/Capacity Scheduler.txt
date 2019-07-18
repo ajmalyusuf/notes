@@ -1,0 +1,114 @@
+Capacity Scheduler:
+-------------------
+Enabling Capacity Scheduler:
+Property: yarn.resourcemanager.scheduler.class
+Value : org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.CapacityScheduler
+
+To take effect:
+---------------
+yarn rmadmin -refreshQueues
+(Administrator privileges are configured with the yarn.admin.acl property on the ResourceManager)
+
+Setting up Queues:
+------------------
+<configuration>
+  <property>
+    <name>yarn.scheduler.capacity.root.queues</name>
+    <value>prod,dev</value>
+  </property>
+  <property>
+    <name>yarn.scheduler.capacity.root.dev.queues</name>
+    <value>eng,science</value>
+  </property>
+  <property>
+    <name>yarn.scheduler.capacity.root.prod.capacity</name>
+    <value>40</value>
+  </property>
+  <property>
+    <name>yarn.scheduler.capacity.root.dev.capacity</name>
+    <value>60</value>
+  </property>
+  <property>
+    <name>yarn.scheduler.capacity.root.dev.maximum-capacity</name>
+    <value>75</value>     /* Though dev is assigned a capacity of 60%, it can elastically grow to a max of 75% of the root capacity */
+  </property>
+  <property>
+    <name>yarn.scheduler.capacity.root.dev.eng.capacity</name>
+    <value>50</value>
+  </property>
+  <property>
+    <name>yarn.scheduler.capacity.root.dev.science.capacity</name>
+    <value>50</value>
+  </property>
+</configuration>
+
+
+
+There is a top-level parent root queue that does not belong to any organization, but instead represents the cluster itself
+
+Applications can ONLY be submitted to the leaf queues
+
+Controlling Access to Queues with ACLs:
+---------------------------------------
+Property: yarn.scheduler.capacity.root.support.acl_submit_applications
+Value: sherlock,pacioli cfo-group
+(users separated by comma and then a space followed by groups separated by comma)
+
+Administrator ACLs are configured with the acl_administer_queue property. The following example would grant administrator access to the "support" queue to the members of "cfo-group":
+
+Property: yarn.scheduler.capacity.root.support.acl_administer_queue
+<value> cfo-group</value>
+Description: A space character followed by "cfo-group" (unquoted).
+
+Setting User Limits:
+--------------------
+
+Property: yarn.scheduler.capacity.root.support.services.minimum-user-limit-percent
+Value: 20
+
+This is minimum reserved for a user per queue. With a value of 20%, only 5 users can run simultaneously
+
+Property: yarn.scheduler.capacity.root.support.user-limit-factor
+Value: 1
+(The default value of "1" means that any single user in the queue can at maximum only occupy the queue’s configured capacity. This prevents users in a single queue from monopolizing resources across all queues in a cluster. Setting the value to "2" would restrict the queue's users to twice the queue’s configured capacity. Setting it to a value of 0.5 would restrict any user from using resources beyond half of the queue capacity.)
+
+Starting and Stopping Queues:
+-----------------------------
+Property: yarn.scheduler.capacity.root.support.state
+Value: RUNNING
+
+Setting to STOPPED means that the que will not take any new job submission; while it will still continue to finish the running jobs
+
+Setting Application Limits:
+---------------------------
+Property: yarn.scheduler.capacity.maximum-applications
+Value: 10000
+(Max number of concurrent - both running and pending, which can be submitetd to cluster)
+
+Property: yarn.scheduler.capacity.<queue-path>.maximum-applications
+Value: absolute-capacity * yarn.scheduler.capacity.maximum-applications
+(can set proportioanlly for a queue)
+
+There is another resource limit that can be used to set a maximum percentage of cluster resources allocated specifically to ApplicationMasters. The maximum-am-resource-percent property has a default value of 10%, and exists to avoid cross-application deadlocks where significant resources in the cluster are occupied entirely by the Containers running ApplicationMasters. This property also indirectly controls the number of concurrent running applications in the cluster, with each queue limited to a number of running applications proportional to its capacity.
+
+Property: yarn.scheduler.capacity.maximum-am-resource-percent
+Value: 0.1
+
+As with maximum-applications, this limit can also be overridden on a per-queue basis:
+
+Property: yarn.scheduler.capacity.<queue-path>.maximum-am-resource-percent
+Value: 0.1
+
+Preemption:
+-----------
+Killing over using apps/containers to give resources to waiting apps.
+
+Scheduler User Interface:
+-------------------------
+http://<hostname>:8088/cluster/scheduler
+
+
+Extra:
+-------
+yarn.scheduler.capacity.maximum-am-resource-percent 
+By Default 0.2 (20%) - which means that only 20% of the capacity can be used for Application Masters, which defined the number of applications that can be running/scheduled

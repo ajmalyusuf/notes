@@ -1,0 +1,7 @@
+Ranger_userful_links.txt
+
+
+http://hortonworks.com/blog/best-practices-in-hdfs-authorization-with-apache-ranger/
+
+http://hortonworks.com/blog/hdfs-acls-fine-grained-permissions-hdfs-files-hadoop/
+

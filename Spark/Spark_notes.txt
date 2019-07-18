@@ -1,0 +1,67 @@
+Spark_notes.txt
+
+===========
+Check spark-defaults.conf
+spark.yarn.historyServer.address  n1-c02-205.hdp.com:18080
+spark.history.ui.port 18080
+spark.eventLog.dir hdfs:///spark-history
+spark.eventLog.enabled true
+spark.history.fs.logDirectory hdfs:///spark-history
+spark.history.provider org.apache.spark.deploy.history.FsHistoryProvider
+----------
+=======
+REMOVE THIS if present:
+spark.yarn.services
+--------
+===========
+If you submit jobs programmatically in a way that spark-env.sh is not executed during the submit step, or 
+if you wish to specify a different cluster version than the version installed on the client, set the following two additional property values:
+Add this 
+
+spark.yarn.am.extraJavaOptions = -Dhdp.version={{hdp_full_version}}
+spark.driver.extraJavaOptions = -Dhdp.version={{hdp_full_version}}
+
+To get the logs :
+# yarn logs -applicationId application_1449699382319_0007 -appOwner <user> > containerlogs.txt 
+---------
+========
+spark-thrift-sparkconf.conf
+
+Add the following properties and values to the spark-thrift-sparkconf.conf file:
+
+spark.eventLog.dir hdfs:///spark-history
+spark.eventLog.enabled true
+spark.history.fs.logDirectory hdfs:///spark-history
+spark.history.provider org.apache.spark.deploy.history.FsHistoryProvider
+-----------
+============
+Check of the below has permission:
+hdfs dfs -mkdir /spark-history
+
+hdfs dfs -chown -R spark:hadoop /spark-history
+hdfs dfs -chmod -R 777 /spark-history
+-------------
+
+=============
+Starting the Spark Thrift Server
+
+The Spark Thrift Server automatically uses dynamic resource allocation. If you use this Spark application, you do not need to set up dynamic resource allocation
+
+From SPARK_HOME, start the Spark SQL Thrift Server. Specify the port value of the Thrift Server (the default is 10015). For example:
+
+su spark
+./sbin/start-thriftserver.sh --master yarn-client --executor-memory 512m --hiveconf hive.server2.thrift.port=100015
+Use this port when you connect via Beeline.
+------------
+
+=============
+Kerberos Considerations
+The Spark Thrift Server must run in the same host as HiveServer2, so that it can access the hiveserver2 keytab.
+Edit permissions in /var/run/spark and /var/log/spark to specify read/write permissions to the Hive service account.
+
+
+
+
+Spark Example:
+[root@n3-c02-207 ~]# find / -name spark-examples*.jar
+/usr/hdp/2.4.0.0-169/spark/lib/spark-examples-1.6.0.2.4.0.0-169-hadoop2.7.1.2.4.0.0-169.jar

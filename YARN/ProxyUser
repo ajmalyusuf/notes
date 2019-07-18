@@ -1,0 +1,25 @@
+
+Hello Gwenael,
+
+These parameters are relevant only to secure (kerborized) clusters.
+
+YARN proxyuser:
+One of the use cases for YARN to be a proxy user is when in a Secure cluster, the Resource Manager needs to able to request new hdfs delegation tokens on behalf of the user who submitetd the job to perform localization and log aggregation. This is needed by long running services (like Streaming services, which may be running more than 7 days), becasue hdfs tokens will eventually expire. For this use case, you can set the "hadoop.proxyuser.yarn.hosts" to the "ResourceManager" hostname OR "*" and hadoop.proxyuser.yarn.groups as "*". This also requires yarn.resourcemanager.proxy-user-privileges.enabled to be set as true in yarn-site.xml
+
+HDFS proxyuser:
+As far as I understand these parameters were introduced as part of an issue related to NFS Gateway, where the user running the NFS-gateway must be able to proxy all the users using the NFS mounts. The documents related to the issue suggests to set both "hadoop.proxyuser.hdfs.hosts" and "hadoop.proxyuser.hdfs.groups" to "*"
+
+Thanks,
+Ajmal Yusuf
+
+
+Apache Bug related to hadoop.proxyuser.yarn.hosts and hadoop.proxyuser.yarn.groups
+
+https://issues.apache.org/jira/browse/YARN-2704
+
+
+http://www.cloudera.com/content/www/en-us/documentation/enterprise/5-3-x/topics/cdh_sg_yarn_security.html
+
+
+
+

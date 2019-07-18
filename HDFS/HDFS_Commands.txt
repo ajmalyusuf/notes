@@ -1,0 +1,28 @@
+HDFS_Commands
+
+hdfs dfsadmin -report
+hdfs fsck /
+
+
+Switching active and standby namenodes
+
+hdfs haadmin -failover <from> <to>
+hdfs haadmin -failover nn2 nn1
+
+
+High available cluster:
+hdfs getconf -namenodes
+hdfs getconf -secondaryNameNodes
+hdfs getconf -backupNodes
+
+hdfs getconf
+hdfs getconf is utility for getting configuration information from the config file.
+
+hadoop getconf
+	[-namenodes]			gets list of namenodes in the cluster.
+	[-secondaryNameNodes]			gets list of secondary namenodes in the cluster.
+	[-backupNodes]			gets list of backup nodes in the cluster.
+	[-includeFile]			gets the include file path that defines the datanodes that can join the cluster.
+	[-excludeFile]			gets the exclude file path that defines the datanodes that need to decommissioned.
+	[-nnRpcAddresses]			gets the namenode rpc addresses
+	[-confKey [key]]			gets a specific key from the configuration

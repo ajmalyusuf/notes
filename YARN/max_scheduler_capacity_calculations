@@ -1,0 +1,19 @@
+max_scheduler_capacity_calculations
+
+yarn.scheduler.capacity.maximum-am-resource-percent >> 0.1
+yarn.scheduler.capacity.root.default.maximum-am-resource-percent >> 0.5
+
+yarn.scheduler.maximum-allocation-mb >> 2250
+yarn.scheduler.minimum-allocation-mb >> 250
+
+
+2250 / 250 * 0.1 * 
+
+
+
+yarn.scheduler.capacity.default.minimum-user-limit-percent=100
+yarn.scheduler.capacity.root.default.user-limit-factor=1
+
+Max Schedulable Applications for a queue = ("Total YARN memory currently in the cluster"  / yarn.scheduler.minimum-allocation-mb) * yarn.scheduler.capacity.maximum-am-resource-percent * Queue Capacity
+
+Max Schedulable Applications Per User = "Max Schedulable Applications for a queue" * yarn.scheduler.capacity.<queue>.minimum-user-limit-percent / 100 * yarn.scheduler.capacity.<queue>.user-limit-factor

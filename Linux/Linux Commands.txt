@@ -1,0 +1,8 @@
+Linux Commands:
+
+To search for an open port and kill the process:
+
+netstat -anp | grep <port>
+Last column has the PID/program
+
+Kill the PID

@@ -1,0 +1,44 @@
+Backup_postgres_db
+
+Check if Postgres is running:
+
+service postgresql status
+
+1. Backup Postgres database on the Ambari server from command line, please run:
+
+# mkdir /var/postgres_backup
+
+# cd /var/postgres_backup
+
+# pg_dump -U ambari ambari > ambari.sql (Default Password: bigdata)
+
+# pg_dump -U mapred ambarirca > ambarirca.sql (Password: mapred)
+
+
+2. Recreate Ambari database from command line, please run:
+
+# su postgres -c 'psql -c "drop database ambari" '
+
+# su postgres -c 'psql -c "drop database ambarirca" '
+
+# su postgres -c 'psql -c "create database ambari" '
+
+# su postgres -c 'psql -c "create database ambarirca" '
+
+ 
+3. Load into Ambari database with the backup data generated:
+
+# su postgres -c 'psql -f ambari.sql -d ambari'
+
+# su postgres -c 'psql -f ambarirca.sql -d ambarirca'
+
+ 
+4. Start ambari-server on Ambari server host from command line, please run:
+
+# ambari-server start
+
+ 
+5. Start ambari-agent on all of the hosts from command line, please run:
+
+# ambari-agent start
+

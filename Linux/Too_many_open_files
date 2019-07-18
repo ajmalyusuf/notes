@@ -1,0 +1,18 @@
+Too_many_open_files
+
+Can not edit /proc/sys
+
+use sysctl command sudo sysctl -w net.ipv6.route.gc_interval=20
+
+sysctl -p
+
+http://blog.cloudera.com/blog/2009/03/configuration-parameters-what-can-you-just-ignore/
+http://askubuntu.com/questions/162345/how-to-increase-open-file-limits-nofile-and-epoll-in-10-04
+https://wiki.apache.org/hadoop/TooManyOpenFiles
+http://www.altj.com/too-many-open-files-error-ubuntu/
+
+Below does not work:
+http://pero.blogs.aprilmayjune.org/2009/01/22/hadoop-and-linux-kernel-2627-epoll-limits/
+
+Good one:
+http://www.cyberciti.biz/faq/linux-increase-the-maximum-number-of-open-files/

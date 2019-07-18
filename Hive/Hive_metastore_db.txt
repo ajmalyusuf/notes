@@ -1,0 +1,4 @@
+Hive_metastore_db
+
+mysql -u hive -p hive
+

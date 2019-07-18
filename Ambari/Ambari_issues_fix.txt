@@ -1,0 +1,9 @@
+Ambari_issues_fix
+
+If Ambari can not see the process running in the server:
+
+1) Check the pid file for existances
+2) Check the file 
+# vi /var/lib/ambari-agent/data/structured-out-status.json
+Try deleting this file (or moving it) and then restart ambari-agent
+

@@ -1,0 +1,66 @@
+Ambari_Fixing_DB_Issues
+
+select ccm.type_name,ccm.version_tag,ccm.create_timestamp,cc.type_name,cc.version_tag from clusterconfigmapping ccm left join clusterconfig cc on ccm.type_name=cc.type_name and ccm.version_tag=cc.version_tag where ccm.selected=1 and cc.type_name is null;
+
+select ccm.type_name, ccm.version_tag, ccm.selected, cc.version_tag from clusterconfigmapping ccm left join clusterconfig cc on ccm.version_tag = cc.version_tag where ccm.selected = 1 and cc.version_tag is NULL;
+
+select * from adminprivilege left join adminresource on adminprivilege.resource_id = adminresource.resource_id where adminresource.resource_id is null;
+
+If any of the above queries return rows, then it needs fix.
+
+
+=====
+
+-----=
+try this query to get the issues with hostcomponents and hostcomponentdesiredstate:
+-----=
+SELECT agg.d_service, agg.d_comp, agg.host_name, agg.host_name FROM 
+( 
+SELECT hcds.service_name AS d_service, hcs.service_name AS c_service, hcds.component_name AS d_comp, hcs.component_name AS c_comp, h.host_name 
+FROM hosts AS h 
+JOIN ClusterHostMapping AS chm ON h.host_name = chm.host_name 
+JOIN hostcomponentstate AS hcds ON h.host_name = hcds.host_name 
+LEFT OUTER JOIN hostcomponentdesiredstate AS hcs ON hcs.host_name = hcds.host_name AND hcs.service_name = hcds.service_name AND hcs.component_name = hcds.component_name 
+ORDER BY hcds.service_name, hcds.component_name, h.host_name 
+) agg 
+WHERE agg.c_service IS NULL OR agg.c_comp IS NULL; 
+-----=
+
+
+select count(*) from HOSTCOMPONENTSTATE;
+
+select count(*) from HOSTCOMPONENTDESIREDSTATE;
+
+select cluster_id, host_id, service_name, component_name, count(*) from HOSTCOMPONENTDESIREDSTATE group by 1,2,3,4;
+
+select cluster_id, count(*) from HOSTCOMPONENTSTATE group by 1;
+select cluster_id, count(*) from HOSTCOMPONENTDESIREDSTATE group by 1;
+
+select cluster_id, host_id, service_name, count(*) from HOSTCOMPONENTSTATE group by 1,2,3;
+select cluster_id, host_id, service_name, count(*) from HOSTCOMPONENTDESIREDSTATE group by 1,2,3 order by 1,2,3;
+
+select cluster_id, host_id, count(*) from HOSTCOMPONENTSTATE group by 1,2;
+select cluster_id, host_id, count(*) from HOSTCOMPONENTDESIREDSTATE group by 1,2 order by 1,2;
+
+
+select ccm.version_tag from clusterconfigmapping ccm left join clusterconfig cc on ccm.version_tag=cc.version_tag where cc.version_tag is null;
+
+
+select ccm.type_name,ccm.version_tag,ccm.create_timestamp,cc.type_name,cc.version_tag from clusterconfigmapping ccm left join clusterconfig cc on ccm.type_name=cc.type_name and ccm.version_tag=cc.version_tag where ccm.selected=1 and cc.type_name is null;
+
+select ccm.type_name, ccm.version_tag, ccm.selected, cc.version_tag from clusterconfigmapping ccm left join clusterconfig cc on ccm.version_tag = cc.version_tag where ccm.selected = 1 and cc.version_tag is NULL;
+
+select * from adminprivilege left join adminresource on adminprivilege.resource_id = adminresource.resource_id where adminresource.resource_id is null;
+
+=====================
+Manually Set Current:
+
+ambari-server set-current --cluster-name=<MyCluster> --version-display-name=HDP-<version>
+ambari-server set-current --cluster-name=EHIHDP --version-display=HDP-2.3.2.0
+=====================
+
+
+https://hortonworks.my.salesforce.com/500E000000V8Ia8?srPos=2&srKp=00a
+https://hortonworks.jira.com/browse/EAR-3588
+
+

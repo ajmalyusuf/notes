@@ -1,0 +1,51 @@
+adding_client_to_hosts.txt
+
+
+Wiki Page to install Client on all the nodes:
+https://cwiki.apache.org/confluence/display/AMBARI/Bulk+install+components+on+multiple+hosts
+
+=====
+In Kerberos Cluster, need to supply the Kerberos admin peincipal:
+1) Create a file called "payload" with
+----------------------------
+{
+"session_attributes" : {
+"kerberos_admin" : {
+"principal" : "admin/admin@SUPPORT.COM",
+"password" : "admin"
+}
+},
+"Clusters": {
+"security_type" : "KERBEROS"
+}
+}
+----------------------------
+Run below command to PUT the kerberos principal:
+curl -H "X-Requested-By:ambari" -u admin:admin -i -X PUT -d @./payload http://localhost:8080/api/v1/clusters/HDP2400
+
+2) Run Below command to POST/register the Client service on the host
+curl -u admin:admin -H "X-Requested-By:ambari" -i -X POST -d '{"host_components" : [{"HostRoles":{"component_name":"SPARK_CLIENT" }}]}' http://localhost:8080/api/v1/clusters/HDP2400/hosts?Hosts/host_name=n4-c02-208.hdp.com
+
+3) Run the below command to PUT the state to INSTALLED, which will install the package on the node(s)
+curl -u admin:admin -H "X-Requested-By:ambari" -i -X PUT -d '{"HostRoles": {"state": "INSTALLED"}}' http://localhost:8080/api/v1/clusters/HDP2400/hosts/n4-c02-208.hdp.com/host_components/SPARK_CLIENT
+
+4) You can then restart full Service to restart all the clients
+=====
+
+
+
+
+
+curl -u <admin_user>:<admin_password> -i -H "X-Requested-By: ambari" -X POST -d '{"host_components" : [{"HostRoles":{"component_name":"KERBEROS_CLIENT"}}] }' http://localhost:8080/api/v1/clusters/hadoop_vcloud_cluster1/hosts?Hosts/host_name=hdpmaster3.tsh.thomson.com
+
+curl -u <admin_user>:<admin_password> -i -H "X-Requested-By: ambari" -X PUT -d '{"HostRoles": {"state": "INSTALLED"}}' http://localhost:8080/api/v1/clusters/hadoop_vcloud_cluster1/hosts/hdpmaster3.tsh.thomson.com/host_components/KERBEROS_CLIENT
+
+
+curl -u <admin_user>:<admin_password> -i -H "X-Requested-By: ambari" -X PUT -d '{"ServiceInfo": {"state" : "STARTED"}}' http://localhost:8080/api/v1/clusters/hadoop_vcloud_cluster1/services/KERBEROS
+
+
+
+
+
+curl -u <admin_user>:<admin_password> -i -H "X-Requested-By: ambari" -X POST -d '{"host_components" : [{"HostRoles":{"component_name":"KERBEROS_CLIENT" }}]}' http://<ambari_server_host>:8080/api/v1/clusters/<cluster_name>/hosts?Hosts/host_name=hdpmaster1.tsh.thomson.com
+

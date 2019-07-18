@@ -1,0 +1,7 @@
+Oozie-site_properties.txt
+
+This has the properties:
+https://github.com/apache/falcon/blob/master/oozie-el-extensions/src/test/resources/oozie-site.xml
+
+
+

@@ -1,0 +1,4 @@
+IDE_Compilations_jar_notes.txt
+
+SBT:
+http://www.scala-sbt.org/release/docs/index.html

@@ -1,0 +1,33 @@
+YARN Requirements
+
+To summarize the requirements for YARN, we need the following features:
+
+[1] Scalability:
+The next-generation compute platform should scale horizontally to tens of thousands of nodes and concurrent applications.
+
+[2] Serviceability:
+The next-generation compute platform should enable evolution of cluster software to be completely decoupled from users’ applications.
+
+[3] Multitenancy:
+The next-generation compute platform should support multiple tenants to coexist on the same cluster and enable fine- grained sharing of individual nodes among different tenants.
+
+[4] Locality Awareness:
+The next-generation compute plat- form should support locality awareness—moving computation to the data is a major win for many applications.
+
+[5] High Cluster Utilization:
+The next-generation compute platform should enable high utilization of the underlying physical resources.
+
+[6] Secure and Auditable Operation:
+The next-generation compute platform should continue to enable secure and auditable usage of cluster resources.
+
+[7] Reliability and Availability:
+The next-generation com- pute platform should have a very reliable user interaction and support high availability.
+
+[8] Support for Programming Model Diversity:
+The next- generation compute platform should enable diverse programming models and evolve beyond just being MapReduce-centric.
+
+[9] Flexible Resource Model:
+The next-generation compute platform should enable dynamic resource configurations on individual nodes and a flexible resource model.
+
+[10] Backward Compatibility:
+The next-generation compute platform should maintain completely backward compatibility of existing Map- Reduce applications.

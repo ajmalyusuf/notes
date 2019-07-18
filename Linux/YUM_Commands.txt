@@ -1,0 +1,43 @@
+YUM_Commands
+
+Query Available Packages From Selected YUM Repository
+yum --disablerepo="*" --enablerepo=<repo_name> list available
+
+List All Repositories and Check Repository ID’s
+yum repolist
+
+To reinstall missing components in the /usr/hdp/<version_number> directory:
+yum reinstall *<version_number>*
+eg: yum reinstall *_2_3_2_0_*
+
+How to use yum to download a package without installing it
+===========================================================
+Install the package including "downloadonly" plugin:
+
+Raw
+(RHEL5)
+# yum install yum-downloadonly
+
+(RHEL6)
+# yum install yum-plugin-downloadonly
+Run yum command with "--downloadonly" option as follows:
+
+Raw
+# yum install --downloadonly --downloaddir=<directory> <package>
+
+
+========================================
+If you have multiple repositories configured in your environment, deploy the following plug-in on all the nodes in your cluster.
+
+yum install yum-plugin-priorities
+
+Edit the /etc/yum/pluginconf.d/priorities.conf file to add the following:
+
+[main]
+
+enabled=1
+
+gpgcheck=0
+
+
+

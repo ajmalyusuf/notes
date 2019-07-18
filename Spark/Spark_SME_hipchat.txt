@@ -1,0 +1,10 @@
+Spark_SME_hipchat.txt
+
+How to configure Executor number and memory
+
+[12:34 PM] Sumit Prakash: @here I have client with 150  nodes and they have mixed hardware some are 40 cores 252 GB ram , 32 cores 252 GB.  what's the recommended value to run spark application.  --num-executors  --executor-cores  --executor-memory ?
+[12:57 PM] Joseph Widen: @SumitPrakash depends 100% on the application and underlying dataset they are using.  You can give them guidelines for max size.  There was a presentation by our Spark guys at Dublin, and the recommendation was no larger than 4 cores, and it looked like 40gb of ram was the most they could allocate before larger executors would start to slow down jobs (due to GC).
+[12:58 PM] Joseph Widen: General rule of the thumb, fewer largers executors are better than many small ones to minimize network costs.  If they are doing map only jobs, than many small ones would actually be better to help with data locality.
+[12:59 PM] Joseph Widen: If they are caching data, its hard to make a guess on total RAM, but I usually start off with 2x dataset size and check the UI for storage usage.  Its hard to make a guess between size of data on disk when its compressed/formated with ORC/Parquet/etc, and the size it will take up in memory in a serialized format.
+[1:01 PM] Joseph Widen: So a 100gb file, try to start with 200gb total executor memory.  If not caching start with 1x total dataset size, and change the config for spark.storage.fraction to 0, if using version 1.5 or earlier.
+[1:02 PM] Joseph Widen: ml/mllib workloads put more pressure on the driver memory as the model info is communicated to/from the driver from the executors, so I usually beef that up if thats the workload 

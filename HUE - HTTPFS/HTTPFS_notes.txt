@@ -1,0 +1,7 @@
+HTTPFS_notes.txt
+
+# curl --negotiate -u : "http://trvlhaddv2gw1.tsh.thomson.com::14000/webhdfs/v1?op=gethomedirectory"
+
+as per the below document:
+
+https://hadoop.apache.org/docs/r2.7.1/hadoop-project-dist/hadoop-hdfs/WebHDFS.html#Get_Home_Directory

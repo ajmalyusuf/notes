@@ -1,0 +1,31 @@
+<workflow-app xmlns="uri:oozie:workflow:0.5" name="${jobName}"> 
+	<start to="decrypt-sales-orders" /> 
+
+	<action name="decrypt-sales-orders"> 
+oozie 
+	</action> 
+
+	<action name="convert-to-parquet"> 
+	<spark xmlns="uri:oozie:spark-action:0.1"> 
+	<job-tracker>${jobTracker}</job-tracker> 
+	<name-node>${nameNode}</name-node> 
+	<master>${sparkMaster}</master> 
+	<name>app=${jobName},job=to-parquet</name> 
+	<class>com.walmart.cth.hadoop.ConvertToParquet</class> 
+	<jar>${appJar}</jar> 
+	<spark-opts>--executor-memory ${sparkExecutorMemory} --num-executors ${sparkNumExecutors} --conf spark.executor.cores=${sparkExecutorCores}</spark-opts> 
+	<arg>fs.tmpPath=${appTmpPath}</arg> 
+	<arg>fs.salesOrderPath=${appSalesOrderPath}</arg> 
+	<arg>fs.lineItemsPath=${appLineItemsPath}</arg> 
+	<arg>fs.manifestDir=${appManifestDir}</arg> 
+	</spark> 
+	<ok to="end" /> 
+	<error to="fail" /> 
+	</action> 
+	<kill name="fail"> 
+	<message>Workflow failed, error 
+	message[${wf:errorMessage(wf:lastErrorNode())}] 
+	</message> 
+	</kill> 
+	<end name="end" /> 
+</workflow-app>

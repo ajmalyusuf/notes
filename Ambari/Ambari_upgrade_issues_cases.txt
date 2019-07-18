@@ -1,0 +1,9 @@
+Ambari_upgrade_issues_cases
+
+1)
+File "/usr/lib/python2.6/site-packages/resource_management/libraries/script/script.py", line 32, in <module> 
+from ambari_commons.constants import UPGRADE_TYPE_NON_ROLLING, UPGRADE_TYPE_ROLLING 
+ImportError: cannot import name UPGRADE_TYPE_NON_ROLLING
+
+Case:
+https://hortonworks.my.salesforce.com/500E000000V9M9P?srPos=0&srKp=500

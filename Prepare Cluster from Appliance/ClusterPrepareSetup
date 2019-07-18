@@ -1,0 +1,69 @@
+vi /etc/rc.local
+Add below lines to it: to Disable the Transparent Huge Page
+======
+if test -f /sys/kernel/mm/redhat_transparent_hugepage/enabled; then
+        echo never > /sys/kernel/mm/redhat_transparent_hugepage/enabled
+fi
+
+if test -f /sys/kernel/mm/redhat_transparent_hugepage/defrag; then
+        echo never > /sys/kernel/mm/redhat_transparent_hugepage/defrag
+fi
+======
+to check use:
+cat /sys/kernel/mm/redhat_transparent_hugepage/defrag
+always madvise [never]
+cat /sys/kernel/mm/redhat_transparent_hugepage/enabled
+always madvise [never]
+
+To Disable Firewall:
+# service iptables save
+# service iptables stop
+# chkconfig iptables off
+
+[root@m1 ~]# chkconfig iptables off
+[root@m1 ~]# chkconfig ip6tables off
+
+reboot
+
+[root@m1 ~]# service iptables status
+iptables: Firewall is not running.
+[root@m1 ~]#
+
+[root@m1 ~]# chkconfig ntpd on
+[root@m1 ~]# service ntpd start
+Starting ntpd:                                             [  OK  ]
+[root@m1 ~]#
+
+------- repeat steps ------
+
+
+Modify HWADDR in /etc/sysconfig/network-scripts/ifcfg-eth0 to be what the MAC Address is set to for the Adapter 1 interface (NAT)
+
+Modify IPADDR in /etc/sysconfig/network-scripts/ifcfg-eth1 to be the appropriate IP address (example: 192.168.56.42).
+Modify HOSTNAME in /etc/sysconfig/network to be the correct fully-qualified hostname (example: m2.hdp2).
+
+edit /etc/hosts
+
+10.0.1.21    hdp-m1.hw.com
+10.0.1.22    hdp-s1.hw.com
+10.0.1.23    hdp-s2.hw.com
+
+Set hostname :
+
+[root@m1 etc]# hostname hdp-m1.hw.com
+[root@m1 etc]# hostname -f hdp-m1.hw.com
+
+Delete the /etc/udev/rules.d/70-persistent-net.rules file:
+[root@m1 ~]# cd /etc/udev/rules.d
+[root@m1 rules.d]# rm 70-persistent-net.rules
+rm: remove regular file `70-persistent-net.rules'? y
+[root@m1 rules.d]#
+
+Execute shutdown -r now to reboot the VM.
+
+
+
+
+
+
+

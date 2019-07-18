@@ -1,0 +1,31 @@
+General trouble shooting commands:
+cat /proc/version
+cat /etc* -release
+Java, jmap -heap *
+histo, jinfo, jstack
+rpm -qa
+ps
+jps
+xmllint
+chown -R
+ifconfig
+ping
+hostname
+
+netstat -anp
+telnet
+service iptables status
+sestatus
+
+
+what is nfsgateway?
+
+
+Please note that the HiveServer port will now change to 10010 if hive is using a binary transfer mode or 10011 if hive is using an http transport mode. You can use "netstat -anp | grep 1001[01]" to determine if the port is available on each of following HiveServer host(s): hdp-s2.hw.com. If the port is not available, the process using it must be terminated.
+
+netstat -anp | grep 1001[01]
+
+check slideshare for Andreas Neumann, Terence Yim for YAM slides
+
+
+jmap -dump:format=b,file=/tmp/heap.hpr <pid>

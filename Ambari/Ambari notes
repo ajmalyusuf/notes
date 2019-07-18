@@ -1,0 +1,39 @@
+This is notes on Ambari
+
+ 1. Back up Current Data
+
+Stop the original Ambari Server.
+
+ambari-server stop
+Create a directory to hold the database backups.
+
+cd /tmp
+mkdir dbdumps
+cd dbdumps/
+Create the database backups.
+
+pg_dump -U $AMBARI-SERVER USERNAME ambari > ambari.sql Password: $AMBARI-SERVER PASSWORD
+pg_dump -U $MAPRED USERNAME ambarirca > ambarirca.sql Password: $MAPRED PASSWORD
+Where usernames and passwords reflect your particular installation. Defaults are ambari-server/bigdata and mapred/mapred.
+
+pg_dump -U ambari ambari > ambari.sql
+pg_dump -U mapred ambarirca > ambarirca.sql
+
+
+Accessing Ambari (hack) database using URL (API) :
+http://10.0.1.11:8080/api/v1/clusters/HDP22/configurations?type=hdfs-site&tag=version1
+
+
+To ge the latest confiuration version from Ambari datbase :
+http://10.0.1.21:8080/api/v1/clusters/HDP22?fields=Clusters/desired_configs
+
+check the script:
+vi /var/lib/ambari-server/resources/scripts/configs.sh
+
+
+org.apache.hadoop.io.compress.GzipCodec,org.apache.hadoop.io.compress.DefaultCodec,org.apache.hadoop.io.compress.SnappyCodec
+
+
+
+
+
