@@ -1,0 +1,65 @@
+Import/Export Database Dump Files
+
+MySQL:
+
+# mysql -u root
+mysql> drop database ambari;
+mysql> create database ambari;
+
+# mysql -u ambari -p ambari < ambari.prod.2016-07-20.sql
+Enter password: bigdata
+
+Login to the Database:
+mysql> update users set user_password = '538916f8943ec225d97a9a86a2c6ec0818c1cd400e09e03b660fdaaec4af29ddbb6f2b1033b81b00' where user_name = 'admin';
+
+
+mysql -u username -p database_name -h localhost < dumpfile.sql
+
+Postgres:
+
+pg_dump -U ambari --schema ambari ambari > ambari.sql
+
+Ambari DB Restore Procedure:
+
+-) Shutdown ambari-server/ all ambari-agents 
+-) Back up your current ambari database by command "pg_dump -U ambari ambari > ambari1.sql" 
+-) Back up one more time, but with a different command "pg_dump -U ambari --schema ambari ambari > ambari2.sql" 
+-) Drop and recreate the current database : 
+
+su postgres 
+psql 
+drop database ambari; 
+create database ambari; 
+-) Import the second replicas into the empty database 'psql -f /tmp/ambari2.sql -d ambari' 
+-) Restart ambari-server /ambari-agent to confirm everything is working 
+
+If the ambari-server is up and running, please go ahead and process the regular upgrade: 
+
+-) stop all ambari-server/agent 
+-) upgrade all ambari-server/agent 
+-) issue 'ambari-server ugprade' 
+-) start ambari-server/ambari-agents 
+
+
+ERROR: If Ambari fails to start and shows the below error in ambari-server.log:
+
+21 Jul 2016 10:26:34,674 ERROR [main] AmbariServer:722 - Failed to run the Ambari Server
+org.apache.ambari.server.StackAccessException: Stack data, stackName=HDP, stackVersion=2.3, serviceName=SMARTSENSE
+        at org.apache.ambari.server.api.services.AmbariMetaInfo.getService(AmbariMetaInfo.java:517)
+        at org.apache.ambari.server.api.services.AmbariMetaInfo.getComponent(AmbariMetaInfo.java:285)
+        at org.apache.ambari.server.controller.utilities.DatabaseChecker.checkDBConsistency(DatabaseChecker.java:95)
+        at org.apache.ambari.server.controller.AmbariServer.run(AmbariServer.java:229)
+
+SOLUTION: Login to Ambari Database and delete following entries for the serviceName shown in the error:
+
+select * from clusterservices WHERE service_name in ('SMARTSENSE');
+select * from servicedesiredstate WHERE service_name in ('SMARTSENSE');
+select * from servicecomponentdesiredstate WHERE service_name in ('SMARTSENSE');
+select * from hostcomponentdesiredstate WHERE service_name in ('SMARTSENSE');
+select * from hostcomponentstate where service_name = 'SMARTSENSE';
+
+delete from clusterservices WHERE service_name in ('SMARTSENSE');
+delete from servicedesiredstate where service_name='SMARTSENSE'; 
+delete from servicecomponentdesiredstate where service_name='SMARTSENSE'; 
+delete from hostcomponentdesiredstate where service_name='SMARTSENSE'; 
+delete from hostcomponentstate where service_name = 'SMARTSENSE'; 
