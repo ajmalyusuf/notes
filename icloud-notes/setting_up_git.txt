@@ -1,0 +1,85 @@
+Setting up Git
+updated by Robert Crews (Jun 17, 2016)
+Setting Up Git
+There are some basic steps you must take to set up Git on your machine the first time:
+1. Get the software. Versions for various operating systems, including OSX, are available here http://git-scm.com/downloads. There's a README for more information on installing.
+2. Configure the software. You need to tell Git who you are, what your email address is, what editor you want to pop up when you need to add a comment to your commit and what files to ignore. 
+ 1. Tell Git who you are, from a shell command line*:
+git config --global user.name "<name_of_the_person_who_made_the_change>"  For example: git config --global user.name "Jamie Smith"
+2. Tell Git what your email address is:
+git config --global user.email <email_address_of_the_person_who_made_the_change>  For example: git config --global user.email "jsmith@hortonworks.com"
+3. (Optional) Tell Git what command-line editor you want to use to add comments (vi/vim is the default).
+           git config --global core.editor <the editor you want, like emacs or nano>
+        For example:     git config --global core.editor nano
+4. (Optional) Tell Git not to track Mac-specific files:
+
+            1. Create a file in your Users/<Your User Name> directory with the following content: # Don't pay attention to temp files *~ # Don't pay attention to Mac .DS_Store files       .DS_Store 
+            Add other files you don't want Git to track. 
+            2. Save the file as .gitignore_global. Make sure the name starts with a period.  
+            3. Add the information to your configuration file:
+
+   			git config --global core.excludesFile "~/.gitignore_global"
+
+5. To check that everything has been stored properly:
+       
+	git config --list
+
+* There are three levels of configuration in Git: system, global, and repository.  System is everybody. Global is you specifically. Repository allows you to set up different configuration settings if you are going to be using different repositories - mostly we don't, so you don't have to worry about that.
+
+Enhancing Your Prompt for Git
+
+Your command line prompt can be updated to show git status when you are visiting a directory that is under git control. This enhancement causes your prompt to display the current branch in parentheses and provides symbols to tell you if you have local changes, staged changes, if your branch is up to date, etc. To set this up on your computer, enter the following at any command prompt:
+ curl -L http://tinyurl.com/jk6ss5r | /bin/bash;. ~/.bash_profile
+The above command creates git-prompt.sh and git-completion.bash in ~/.config/git/, and appends text to ~/.bash_profile.
+The prompt changes when you are in a directory that is under git control. (There is no change to the prompt for normal directories.) The change includes, in parentheses, the branch name and one or more symbols from the following table:
+ ----------+-------------------------
+   Symbols |        Meaning          
+ ----------+-------------------------
+     *        Unstaged files present
+     +        Staged files present
+     $        Stashed files present
+     %        Untracked files present
+     <        Upstream is ahead
+     >        Upstream is behind
+     =        Up to date
+     <>       Diverged from upstream
+ ----------+-------------------------
+If you want to remove this for any reason, remove ~/.config/git/git-prompt.sh and ~/.config/git/git-completion.bash, then remove the added bit at the end of .bash_profile (which is easy to recognize).
+
+Configuring a Graphical Diff and Merge Tool
+
+Resolving merge conflicts is significantly easier with a graphical merge tool. The DiffMerge program is a free and excellent tool for it. Here is the best way to install it:
+1. Download and run the installer, which you can get from https://sourcegear.com/diffmerge/downloads.php
+2. Run DiffMerge by double-clicking the app in your Applications folder.
+3. Choose Preferences from the DiffMerge menu and click Folder Filters.
+4. Enter the file types you want diffmerge to ignore. In particular, enter "png" in the Use File Suffix Filters list. You might also want to include others to skip, such as adding "target" to the Use Sub-folder Filters.
+5. From the command line, enter 
+edit ~/.gitconfig  then incorporate the following into your file: 
+[diff]
+    tool = diffmerge
+[difftool]
+    prompt = false
+[difftool "diffmerge"]
+    cmd = diffmerge \"$LOCAL\" \"$REMOTE\"
+[merge]
+    tool = diffmerge
+[mergetool]
+    prompt = false
+[mergetool "diffmerge"]
+    trustExitCode = true
+    cmd = diffmerge --merge --result=\"$MERGED\" \"$LOCAL\" \"$BASE\" \"$REMOTE\"
+ 
+To use this tool, substitute difftool for diff or mergetool for merge on the command line. in other words, if you get a merge conflict, enter the following at the command line:
+
+git mergetool
+
+To see the differences in files across branches, see the following sample session:
+
+cd ~/Sandbox/RTFM_Docs
+git checkout HDP-2.4.0
+git difftool HDP-2-trunk -- HDP2/pom.xml
+git difftool HDP-2-trunk -- HDP2/Installing_HDP_Manually
+
+In the checkout line, note the move to the branch where you are planning to make changes. The git checkout HDP-2.4.0 means we will compare another branch (HDP-2-trunk in the next line) to HDP-2.4.0.
+
+In the pom.xml example, note that when you specify a single file, you will only see the diff for that single file. If you include a directory, you will see the diff for all the different files in the directory. (When you close the diff window, a new one will pop up till all the diffs are shown.) If you want to stop the diff, enter ctrl-c from the commmand line. If you to not include a file name or a directory, you will see the diff for the entire branch commit.
