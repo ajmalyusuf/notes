@@ -1,0 +1,116 @@
+Kerberos cross realm trust for distcp
+
+Runbook:
+docs.google.com/document/1FgMiKfxfZLF
+
+https://community.hortonworks.com/articles/18686/kerberos-cross-realm-trust-for-distcp.html
+
+Also a good read:
+http://henning.kropponline.de/2015/03/15/distcp-two-ha-cluster/
+
+Article
+Kerberos cross realm trust for distcp
+This article is to demonstrate how to setup cross realm trust for distcp between two secure HDP clusters with their own Kerberos realms(KDC’s).
+Prerequisites
+* Both HDP clusters must be running JDK 1.7 or higher. JDK 1.6 has some known issues
+Lets assume first HDP DEV cluster realm : HDPDEV.DEV.COM
+Lets assume second HDP QA cluster realm : HDPQA.QA.COM
+Step 1 :
+To set up cross realm trust between HDPDEV.DEV.COM and HDPQA.QA.COM, for example a client of realm HDPDEV.DEV.COM to access a service in realm HDPDQA.QA.COM, both realms must share a key for a principal name krbtgt/ HDPDQA.QA.COM@ HDPDEV.DEV.COM and both keys must have the same key version number associated with them.
+Cross realm trust is unidirectional by default. So for clients in HDPQA.QA.COM also to have access services in HDPDEV.DEV.com, both realms must share a key for principal krbtgt/ HDPDDEV.DEV.COM@ HDPQA.QA.COM.
+Add both krbtgt principals on both clusters
+#HDP DEV Cluster
+kadmin.local : addprinc krbtgt/ HDPDQA.QA.COM@ HDPDEV.DEV.COM
+kadmin.local : addprinc krbtgt/ HDPDDEV.DEV.COM@ HDPQA.QA.COM
+#HDP QA cluster
+Kadmin.local : addprinc krbtgt/ HDPDQA.QA.COM@ HDPDEV.QA.COM
+kadmin.local : addprinc krbtgt/ HDPDDEV.DEV.COM@ HDPQA.QA.COM
+Note: On both clusters verify both entries have matching kvno and encryption types using kadmin.local : getprinc <principal_name>.
+Step 2:
+
+Next step is to set hadoop.security.auth_to_local parameter in both clusters. This parameter helps to map the principal to user. One issue here is that the SASL RPC client requires that the remote server’s Kerberos principal must match the server principal in its own configuration. Therefore, the same principal name must be assigned to the applicable NameNodes in the source and the destination cluster. For example, if the Kerberos principal name of the NameNode in the source cluster is nn/host1@HDPDDEV.DEV.COM, the Kerberos principal name of the NameNode in destination cluster must be nn/host2@HDPDQA.QA.COM, rather than nn2/host2@realm, for example
+In Dev cluster add :
+1. <property>
+2. 	<name>hadoop.security.auth_to_local</name>
+3. 	<value> 
+4. 		RULE:[2:$1@$0](nn@.*HDPQA.QA.COM s/@.*/hdfs/
+5. 		RULE:[2:$1@$0](rm@.*HDPDQA.QA.COM s/@.*/yarn/
+6. 		RULE:[1:$1@$0](.*@HDPDQA.QA.COM)s/@.*//
+7. 		RULE:[2:$1@$0](.*@HDPDQA.QA.COM s/@.*//
+8. 	</value>
+9. </property>
+In QA cluster add :
+1. <property>
+2. 	<name>hadoop.security.auth_to_local</name>
+3. 	<value> 
+4. 		RULE:[2:$1@$0](nn@.*HDPDEV.DEV.COM s/@.*/hdfs/
+5. 		RULE:[2:$1@$0](rm@.*HDPDDEV.DEV.COM s/@.*/yarn/
+6. 		RULE:[1:$1@$0](.*@HDPDDEV.DEV.COM)s/@.*//
+7. 		RULE:[2:$1@$0](.*@HDPDEV.DEV.COM s/@.*//
+8. 	</value>
+9. </property>
+To test the mapping, use org.apache.hadoop.security.HadoopKerberosName.
+For example,
+[root@localhost]$ hadoop org.apache.hadoop.security.HadoopKerberosName nn/localhost@HDPDEV.DEV.COM
+Name: nn/localhost@HDPDEV.DEV.COM to hdfs
+Step 3:
+Configure complex trust relationships. There are two ways to do it. One way is to configure a shared hierarchy of names. This is the default and simple method. The other way is to explicitly change capaths section in krb5.conf file. This is complicated but more flexible.
+
+Configure paths in krb5.conf :
+Configure the capaths section of /etc/krb5.conf, so that clients which have credentials for one realm will be able to look up which realm is next in the chain which will eventually lead to the being able to authenticate to servers.
+Edit the /etc/krb5.conf files on both clusters (all nodes) to map the domain to the realm.
+For example,
+In Dev Cluster :
+1. [capaths] 
+2. HDPDDEV.DEV.COM ={ 
+3. 	HDPDQA.QA.COM = . 
+4. }
+In QA cluster:
+1. [capaths] 
+2. HDPDQA.QA.COM = {
+3. 	HDPDDEV.DEV.COM = . 
+4. }
+The value “.” is used if there are no intermediate realms.
+
+
+
+
+
+
+Step 4 :
+
+Set dfs.namenode.kerberos.principal.patternparameter in hdfs-site.xml to *. This is a client-side RegEx that can be configured to control allowed realms to authenticate with.
+If this parameter is not set,
+java.io.IOException: Failed on local exception: java.io.IOException: java.lang.IllegalArgumentException: Server has invalid Kerberos principal: nn/hdm1.qa.com@PHD.DEV.COM; Host Details : local host is: "sdw1.dev.com/10.181.22.130"; destination host is: "hdm1.qa.com":8020;
+Step 5 :
+Test trust is setup by running hdfs commands from DEV cluster to QA cluster and vice versa.
+Example:
+On the DEV cluster, kinit userA@HDPDEV.DEV.COM and then issue hdfs commands:
+1. hdfs dfs –ls hdfs://<NameNode_FQDN_forQACluster>:8020/tmp
+2. hdfs dfs -put /tmp/test.txt hdfs://<NameNode_FQDN_forQACluster>:8020/tmp 
+Do a similar test on QA cluster.
+Step 6 :
+Running distcp to copy a file from DEV to QA cluster
+1. hadoop distcp hdfs:// <NameNode_FQDN_forDEVCluster>:8020/tmp/test.txt  hdfs://<NameNode_FQDN_forQACluster>:8020/tmp/
+
+WALMART - Distcp issue (Sumit/Ming):
+
+https://hortonworks.my.salesforce.com/500E000000ZwbDl?srPos=0&srKp=500
+Final Solution:
+I had discussion with client and they didn't agree to add the HA config property to the hdfs-site.xml as they have multiple cluster and they don't want to add the HA property of all cluster to hdfs-site.xml. As a workaround developer will do curl call to the destination Custer to find the current active namenode and would pass the active namenode in the distcp command. Please close the ticket .
+
+
+
+HA
+dfs.nameservices=hacluster,prod12
+dfs.internal.nameservices=hacluster
+
+dfs.ha.namenodes.prod12=pnn1,pnn2
+dfs.namenode.rpc-address.prod12.pnn1=n1-c03-211.hdp.com:8020
+dfs.namenode.rpc-address.prod12.pnn2=n3-c03-213.hdp.com:8020
+dfs.client.failover.proxy.provider.prod12=org.apache.hadoop.hdfs.server.namenode.ha.ConfiguredFailoverProxyProvider
+
+dfs.namenode.http-address.prod12.pnn1=n1-c03-211.hdp.com:50070
+dfs.namenode.https-address.prod12.pnn1=n1-c03-211.hdp.com:50470
+dfs.namenode.http-address.prod12.pnn2=n3-c03-213.hdp.com:50070
+dfs.namenode.https-address.prod12.pnn2=n3-c03-213.hdp.com:50470
