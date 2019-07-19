@@ -114,3 +114,47 @@ dfs.namenode.http-address.prod12.pnn1=n1-c03-211.hdp.com:50070
 dfs.namenode.https-address.prod12.pnn1=n1-c03-211.hdp.com:50470
 dfs.namenode.http-address.prod12.pnn2=n3-c03-213.hdp.com:50070
 dfs.namenode.https-address.prod12.pnn2=n3-c03-213.hdp.com:50470
+
+
+
+-------
+
+How to check if Kerberos cross realm is setup correctly?
+
+A Kerberos cross realm setup is used when one Kerberos realm (e.g. MIT KDC ) needs to trust another Kerberos realm (e.g. Active Directory) Following example/steps would help in identifying if the cross realm is setup correctly:  For example, consider two realms CORP.EXAMPLE.COM and DEV.EXAMPLE.COM. We will consider a user to be part of CORP.EXAMPLE.COM realm to verify the cross-realm setup.  1. Obtain the initial kerberos ticket for <any-user>@CORP.EXAMPLE.COM using the kinit command.	
+
+[root@sandbox ~]# kinit user1@CORP.EXAMPLE.COM
+Password for user1@CORP.EXAMPLE.COM:	
+
+2. Validate the kerberos ticket for this user using klist -eaf command. It should show only one ticket for krbtgt/CORP.EXAMPLE.COM@CORP.EXAMPLE.COM	
+
+[root@sandbox ~]# klist -eaf
+Ticket cache: FILE:/tmp/krb5cc_0
+Default principal: user1@CORP.EXAMPLE.COM
+Valid starting     Expires            Service principal
+06/09/16 21:52:08  06/10/16 21:51:22  krbtgt/CORP.EXAMPLE.COM@CORP.EXAMPLE.COM
+      renew until 06/09/16 21:52:08, Flags: FRI
+      Etype (skey, tkt): aes256-cts-hmac-sha1-96, aes256-cts-hmac-sha1-96
+      Addresses: (none)	
+
+3. Get a service ticket for any user from another realm DEV.EXAMPLE.COM using kvno command.	[root@sandbox ~]# kvno nn/sandbox.hortonworks.com@DEV.EXAMPLE.COM
+nn/sandbox.hortonworks.com@DEV.EXAMPLE.COM: kvno = 3
+
+4. Run klist -eaf again.		1.		[root@sandbox ~]# klist -eaf
+Ticket cache: FILE:/tmp/krb5cc_0
+Default principal: user1@CORP.EXAMPLE.COM
+Valid starting     Expires            Service principal
+06/09/16 21:52:08  06/10/16 21:51:22  krbtgt/CORP.EXAMPLE.COM@CORP.EXAMPLE.COM
+      renew until 06/09/16 21:52:08, Flags: FRI
+      Etype (skey, tkt): aes256-cts-hmac-sha1-96, aes256-cts-hmac-sha1-96
+      Addresses: (none)
+06/09/16 21:52:51  06/10/16 21:51:22  krbtgt/DEV.EXAMPLE.COM@CORP.EXAMPLE.COM
+      renew until 06/09/16 21:52:08, Flags: FRI
+      Etype (skey, tkt): aes256-cts-hmac-sha1-96, aes256-cts-hmac-sha1-96
+      Addresses: (none)
+06/09/16 21:52:51  06/10/16 21:51:22  nn/sandbox.hortonworks.com@DEV.EXAMPLE.COM
+      renew until 06/09/16 21:52:08, Flags: FRT
+      Etype (skey, tkt): aes256-cts-hmac-sha1-96, aes256-cts-hmac-sha1-96
+      Addresses: (none)	If the Cross realm is setup correctly, as seen above, the following three tickets would be listed by klist -eaf:		1.	Original ticket: krbtgt/CORP.EXAMPLE.COM@CORP.EXAMPLE.COM 
+1. New ticket: krbtgt/DEV.EXAMPLE.COM@CORP.EXAMPLE.COM 
+2. New ticket: nn/sandbox.hortonworks.com@DEV.EXAMPLE.COM 
