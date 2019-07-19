@@ -1,0 +1,91 @@
+OpenLdap Configuration :
+
+RANGER LDAP Integration:
+https://community.hortonworks.com/articles/16696/ranger-ldap-integration.html
+
+
+https://docs.google.com/document/d/1t6eN0_7vNONC4mjoKw4xfgR0zPigf7t-caMjeypLl5Y/edit?pli=1
+
+Working LDAP SEARCH
+ldapsearch -H ldap://coke2.openstacklocal:389 -b "dc=hdp,dc=com" -D "cn=Manager,dc=hdp,dc=com" -w p@ssw0rd "objectClass=*"
+
+
+Host : 10.0.1.114
+
+# yum -y install openldap openldap-clients openldap-servers 
+# Setting password to “p@ssw0rd” (without the quotes)
+# slappasswd
+New password:
+Re-enter new password:
+{SSHA}tZcSub17zuY0GRidNDbT4FOEjCdfZu0s
+[root@n4-114 ~]#
+
+
+ON ALL OTHER NODES:
+
+yum -y install openldap openldap-clients nss_ldap nss-pam-ldapd pam_ldap nscd rpcbind sudo.x86_64
+
+authconfig --enableldap --enableldapauth --ldapserver=n4-114.hdp.com --ldapbasedn="dc=hdp,dc=com" --enablemkhomedir --update
+Starting nslcd:                                            [  OK  ]
+[root@n2-112 yum.repos.d]#
+
+ON n1.114.hdp.com , authconfig DID NOT start nslcd
+
+Resolution: So had to start it manually:
+
+/etc/init.d/nslcd status
+/etc/init.d/nslcd start
+
+TO CHANGE the default SHELL for users in LDAP:
+
+vi /etc/nslcd.conf
+Add:
+
+——
+# Added by Ajmal
+map    passwd loginShell       "/bin/bash"
+——
+then restart:
+
+/etc/init.d/nslcd restart
+
+ LDAP Search:
+
+ldapsearch -x -LLL -b dc=hdp,dc=com
+ldapsearch -x -LLL -b ou=IT,dc=hdp,dc=com
+ldapsearch -x -LLL -b ou=Business,dc=hdp,dc=com
+
+ldapsearch -H ldap://n4-114.hdp.com:389 -D 'cn=adam1,ou=Business,dc=hdp,dc=com' -W -x -b dc=hdp,dc=com
+
+
+ldapsearch -h n4-114.hdp.com -D 'cn=adam1,ou=Business,dc=hdp,dc=com' -W -x -b dc=hdp,dc=com
+
+
+[root@n1-111 conf]# beeline --verbose=true
+Beeline version 1.2.1000.2.5.3.0-37 by Apache Hive
+beeline> !connect jdbc:hive2://n2-112.hdp.com:10000/default:user=rparmar;password=hadoop
+Connecting to jdbc:hive2://n2-112.hdp.com:10000/default:user=rparmar;password=hadoop
+Enter username for jdbc:hive2://n2-112.hdp.com:10000/default:user=rparmar;password=hadoop: rparmar
+Enter password for jdbc:hive2://n2-112.hdp.com:10000/default:user=rparmar;password=hadoop: ******
+Connected to: Apache Hive (version 1.2.1000.2.5.3.0-37)
+Driver: Hive JDBC (version 1.2.1000.2.5.3.0-37)
+Transaction isolation: TRANSACTION_REPEATABLE_READ
+0: jdbc:hive2://n2-112.hdp.com:10000/default:>
+
+[root@n1-111 conf]#
+
+Ensure dn is with “uid=user;dc=….” and not “cn=user;dc=….”
+https://issues.apache.org/jira/browse/HIVE-8190
+
+Similar to :
+dn: uid=rparmar,ou=people,dc=hadoop,dc=apache,dc=org
+objectclass:top
+objectclass:person
+objectclass:organizationalPerson
+objectclass:inetOrgPerson
+cn: rparmar
+sn: rparmar
+uid: rparmar
+userPassword: qwer1234
+
+
