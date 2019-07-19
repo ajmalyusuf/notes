@@ -1,0 +1,163 @@
+AD Server in Open Stack:
+
+
+
+Openstack AD 2012R2 Overview
+
+Our AD on Openstack has been configured with these pre-created OrganizationalUnits (OUs) with the expectation that people will use these accordingly:
+
+CorpUsers OU, which contains:
+* business users and groups (e.g. it1, hr1, legal1)
+* hadoopadmin: Admin user (for AD, Ambari, ...)
+* OU=CorpUsers,DC=lab,DC=hortonworks,DC=net
+
+ServiceUsers OU, which contains:
+* ●	service users - that would not be created by Ambari (e.g. rangeradmin, ambari etc)
+* ●	OU=ServiceUsers,DC=lab,DC=hortonworks,DC=net
+
+HadoopServices OU, which contains:
+* ●	hadoop service principals (will be created by Ambari)
+* ●	OU=HadoopServices,DC=lab,DC=hortonworks,DC=net
+
+HadoopNodes OU, which contains:
+* ●	list of nodes registered with AD via SSSD
+* ●	OU=HadoopNodes,DC=lab,DC=hortonworks,DC=net
+
+* ➔	Active Directory secure LDAP (LDAPS) connectivity has been configured. If required, AD CA certificate ad-ca.cer can be downloaded from here.
+* ➔	Active Directory User container for principals has been created and is on-hand. For example, "ou=HadoopServices,dc=lab,dc=hortonworks,dc=net"
+* ➔	Active Directory administrative credentials with delegated control of "Create, delete, and manage user accounts" on the previously mentioned User container are on-hand. e.g. hadoopadmin
+
+
+Openstack AD 2012R2 configuration
+
+Initialization:
+Add AD hostname/IP to each node of your cluster:
+echo "172.26.66.112 ad-21115.lab.hortonworks.net ad-21115" >> /etc/hosts
+
+1. Configure AD as LDAP server:
+
+a. Install openldap packages on all the nodes:
+yum install -y openldap-clients ca-certificates
+
+b. Copy & configure AD CA certificate:
+cp ad-ca.cer /etc/pki/ca-trust/source/anchors/ad-ca.cer
+sudo update-ca-trust force-enable sudo update-ca-trust extract sudo update-ca-trust check
+
+c. Edit /etc/openldap/ldap.conf :
+sudo tee -a /etc/openldap/ldap.conf > /dev/null << EOF TLS_CACERT /etc/pki/tls/cert.pem URI ldaps://ad-21115.lab.hortonworks.net ldap://ad-21115.lab.hortonworks.net BASE dc=lab,dc=hortonworks,dc=net EOF
+
+d. Check AD connectivity using openssl & ldapsearch
+openssl s_client -connect ad-21115.lab.hortonworks.net:636 </dev/null
+
+2. AD information to enable Kerberos:
+    * ○	KDC:
+        * i.	KDC host: ad-21115.lab.hortonworks.net
+        * ii.	Realm name: LAB.HORTONWORKS.NET
+        * iii.	LDAP url: ldaps://ad-21115.lab.hortonworks.net
+        * iv.	Container DN: ou=HadoopServices,dc=lab,dc=hortonworks,dc=net
+        * v.	Domains: hortonworks.com,.hortonworks.com
+    * ○	Kadmin:
+        * i.	Kadmin host: ad-21115.lab.hortonworks.net
+        * ii.	Admin principal: hadoopadmin@LAB.HORTONWORKS.NET
+        * iii.	Admin password: BadPass#1
+
+Ajmal: ldapsearch string:
+1)
+ldapsearch -x -h ad-21115.lab.hortonworks.net -b 'ou=Users,dc=lab,dc=hortonworks,dc=net' -D 'cn=ldap-reader,ou=ServiceUsers,dc=lab,dc=hortonworks,dc=net' -s sub -W '(&(ou=CorpUsers,dc=lab,dc=hortonworks,dc=net)(objectcategory=person))'
+2)
+ldapsearch -x -h ad-21115.lab.hortonworks.net -b 'ou=Users,dc=lab,dc=hortonworks,dc=net' -D 'cn=ldap-reader,ou=ServiceUsers,dc=lab,dc=hortonworks,dc=net' -s sub -W '(sAMAccountName=*,ou=CorpUsers,dc=lab,dc=hortonworks,dc=net)'
+3)
+ldapsearch -x -h ad-21115.lab.hortonworks.net -b 'ou=Users,dc=lab,dc=hortonworks,dc=net' -D 'cn=ldap-reader,ou=ServiceUsers,dc=lab,dc=hortonworks,dc=net' -s sub -W '(CN=hr1,ou=CorpUsers,dc=lab,dc=hortonworks,dc=net)'
+
+
+
+        * 2.	Ambari keytab generation:
+ktpass
+    	-out ambari.keytab
+    	-princ ambari@LAB.HORTONWORKS.NET
+    	-pass BadPass#1
+    	-mapuser ambari@LAB.HORTONWORKS.NET
+    	-mapop set
+    	-crypto All
+    	-ptype KRB5_NT_PRINCIPAL
+
+        * 3.	Enable Security for Ambari (ONLY on Ambari server node): 
+
+        * 4.	OU: OU=CorpUsers,DC=lab,DC=hortonworks,DC=net OU=ServiceUsers,DC=lab,DC=hortonworks,DC=net
+
+Configure SSSD on each node:
+
+ad_user="registersssd" ad_domain="lab.hortonworks.net" ad_dc="ad-21115.lab.hortonworks.net" ad_root="dc=lab,dc=hortonworks,dc=net" ad_ou="ou=HadoopNodes,${ad_root}" ad_realm=${ad_domain^^}
+
+
+Ranger Usersync configuration:
+LDAP/AD URL: ldap://ad-21115.lab.hortonworks.net:389
+Bind User: cn=ldap-reader,ou=ServiceUsers,dc=lab,dc=hortonworks,dc=net
+Bind Password: BadPass#1
+Username Attribute: sAMAccountName
+User Object Class: user
+User Search Base: ou=CorpUsers,dc=lab,dc=hortonworks,dc=net
+User Search Filter: (objectcategory=person)
+User Group Map Sync: ON
+Group Sync: OFF
+
+Setup Ambari/AD sync
+ad_host="ad-21115.lab.hortonworks.net" ad_root="ou=CorpUsers,dc=lab,dc=hortonworks,dc=net" ad_user="cn=ldap-reader,ou=ServiceUsers,dc=lab,dc=hortonworks,dc=net"
+
+ambari-server setup-ldap \   --ldap-url=${ad_host}:389 \   --ldap-secondary-url= \   --ldap-ssl=false \   --ldap-base-dn=${ad_root} \   --ldap-manager-dn=${ad_user} \   --ldap-bind-anonym=false \   --ldap-dn=distinguishedName \   --ldap-member-attr=member \   --ldap-group-attr=cn \   --ldap-group-class=group \   --ldap-user-class=user \   --ldap-user-attr=sAMAccountName \   --ldap-save-settings \   --ldap-bind-anonym=false \   --ldap-referral=
+
+
+
+
+
+LDAP CHEAT SHEET:
+
+LDAPSEARCH CHEATS BY COMPONENT:
+
+Ambari:
+
+ldapsearch -x -H ldap://<authentication.ldap.primaryUrl> -b <authentication.ldap.baseDn>
+ -D <authentication.ldap.managerDn> -W “<authentication.ldap.usernameAttribute>=<your-account-name>"
+
+Hue:
+
+ldapsearch -x -H <ldap_url> -b <base_dn> -D <bind_dn> -W “<user_name_attr>=<your-account-name>”
+
+Ranger Usersync:
+
+ldapsearch -x -H <ranger.usersync.ldap.url> -b <ranger.usersync.ldap.searchBase> -D <ranger.usersync.ldap.binddn> -W “<ranger.usersync.ldap.user.nameattribute>=<your-account-name>”
+
+Just plug in values from config file or ambari gui and these are the commands you need to run to make sure their ldap is set up as the config believes.
+
+
+
+LDAP CHEAT SHEAT (Most common configs):
+
+Most people do not change the defaults of a lot of the ldap values in their environment.  Because of this we can kind of “cheat” as we know what the values should be based on the type of ldap they have.  Here is a cheat sheet of what the values would be if they left them default for each of the types of ldap:
+
+
+Active Directory:
+
+authentication.ldap.dnAttribute=distinguishedName
+authentication.ldap.groupMembershipAttr= member
+authentication.ldap.groupObjectClass=group
+authentication.ldap.userObjectClass=user
+authentication.ldap.usernameAttribute=sAMAccountName
+
+
+OpenLdap:
+
+authentication.ldap.dnAttribute=distinguishedName
+authentication.ldap.groupMembershipAttr=member
+authentication.ldap.groupObjectClass=groupOfNames
+authentication.ldap.userObjectClass=inetOrgPerson
+authentication.ldap.usernameAttribute=uid
+
+Redhat/Ipa Ldap:
+
+authentication.ldap.dnAttribute=dn
+authentication.ldap.groupMembershipAttr=memberUid
+authentication.ldap.groupObjectClass=posixGroup
+authentication.ldap.userObjectClass=person
+authentication.ldap.usernameAttribute=uid
+
