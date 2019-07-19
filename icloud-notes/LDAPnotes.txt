@@ -88,4 +88,39 @@ sn: rparmar
 uid: rparmar
 userPassword: qwer1234
 
+-------
+
+
+Installing Kerberos KDC and Kadmin on a host
+
+yum install krb5-server krb5-libs krb5-workstation
+
+
+hostname -f
+vi /etc/krb5.conf
+find / -name kerberos
+cd /var/kerberos
+ls
+cd krb5kdc/
+ls
+vi kdc.conf
+vi kadm5.acl
+
+
+kdb5_util create -s
+service krb5kdc start
+service kadmin start
+
+chkconfig krb5kdc on
+chkconfig kadmin on
+
+kadmin.local -q "addprinc admin/admin"
+service kadmin restart
+service krb5kdc restart
+hostname -f
+kadmin.local
+kadmin.local: listprincs
+
+------
+
 
