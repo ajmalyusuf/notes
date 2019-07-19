@@ -240,3 +240,19 @@ $JAVA_HOME/bin/jar xf $JAVA_HOME/jre/lib/security/local_policy.jar default_local
 grep CryptoAllPermission default_local.policy
 ------
 
+Hadoop Tutorial GITHUB
+
+https://github.com/romainr/hadoop-tutorials-examples
+-----
+Monitoring Applications running on your YARN Cluster using Apache Flink
+
+https://www.linkedin.com/pulse/monitoring-applications-running-your-yarn-cluster-hemant
+
+https://github.com/hemantdindi/applerts
+------
+Setting up Active Directory
+
+https://www.psattack.com/articles/20160718/setting-up-an-active-directory-lab-part-1/
+
+----
+
