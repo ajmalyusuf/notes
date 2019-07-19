@@ -1,0 +1,39 @@
+Hive ACID tables
+
+# This is needed for ACID
+
+set hive.support.concurrency=true;
+set hive.enforce.bucketing=true;
+set hive.exec.dynamic.partition.mode=nonstrict;
+set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
+set hive.compactor.initiator.on=true;
+set hive.compactor.worker.threads=1;
+
+# If you get the error:
+Loading data to table acid_testing.drivers_acid_imported_2222
+Failed with exception checkPaths: hdfs://coke1.openstacklocal:8020/user/hive/export_2/driver_acid_imported/.hive-staging_hive_2017-05-05_17-26-03_598_2744928749645349951-1/-ext-10000 has nested directory hdfs://coke1.openstacklocal:8020/user/hive/export_2/driver_acid_imported/.hive-staging_hive_2017-05-05_17-26-03_598_2744928749645349951-1/-ext-10000/delta_0000005_0000005
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.MoveTask
+
+set hive.mapred.supports.subdirectories=true; 
+set mapred.input.dir.recursive=true; 
+
+- create a table using the drivers data
+
+driverId,name,ssn,location,certified,wage-plan
+
+create table drivers_acid(
+	driver_id int,
+	name string,
+	ssn string,
+	location string,
+	certified string,
+	wage_plan string)
+	clustered by (driver_id) into 8 buckets  stored as orc TBLPROPERTIES ('transactional'='true');
+
+
+
+insert into drivers_acid select * from default.drivers;
+
+select * from  drivers_acid where driver_id = 10;
+update drivers_acid set ssn = '000221111' where driver_id = 10;
+select * from  drivers_acid where driver_id = 10;
