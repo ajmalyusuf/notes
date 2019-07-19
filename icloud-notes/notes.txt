@@ -230,4 +230,13 @@ mysqldump -u root --databases runbook_db > dump.sql
 
 ------
 
+Checking JCE Policy
+
+zipgrep CryptoAllPermission $JAVA_HOME/jre/lib/security/local_policy.jar
+
+OR
+
+$JAVA_HOME/bin/jar xf $JAVA_HOME/jre/lib/security/local_policy.jar default_local.policy 
+grep CryptoAllPermission default_local.policy
+------
 
