@@ -1,0 +1,233 @@
+RegEx / Regular Expression
+
+https://regex101.com/#python
+
+https://www.thegeekstuff.com/2014/07/advanced-python-regex/
+
+https://www.regular-expressions.info/floatingpoint.html
+
+
+1. Working with Multi-line strings / matches
+2. Greedy vs. Non-Greedy matching
+3. Substitution using regular expressions
+
+https://stackoverflow.com/questions/106179/regular-expression-to-match-dns-hostname-or-ip-address
+
+----
+Python Profiler
+
+Pyflame
+https://github.com/uber/pyflame/blob/master/README.md
+
+https://github.com/brendangregg/FlameGraph
+-----
+Tutorials
+
+https://www.dezyre.com/hadoop-tutorial/hive-tutorial
+https://www.dezyre.com/projects/big-data-projects
+https://jaceklaskowski.gitbooks.io/mastering-spark-sql/spark-sql-thrift-server.html
+
+https://hortonworks.com/blog/bringing-cloud-native-architecture-to-big-data-in-the-data-center/
+
+PEXPECT - ssh
+https://www.pythonforbeginners.com/systems-programming/how-to-use-the-pexpect-module-in-python
+https://stackoverflow.com/questions/51601127/cant-login-as-sudo-when-using-pexpect-from-python-for-ssh?noredirect=1&lq=1
+https://stackoverflow.com/questions/18046508/python-pexpect-pxssh-with-sudo-and-eof
+
+
+use pexpect to scp "large" size file, we need to sleep to get the correct size of files?
+https://github.com/pexpect/pexpect/issues/421
+
+Source code for pexpect.run
+https://pexpect.readthedocs.io/en/stable/_modules/pexpect/run.html
+
+Config files in Python
+https://martin-thoma.com/configuration-files-in-python/#file-endings
+
+https://pexpect.readthedocs.io/en/stable/FAQ.html
+
+https://github.com/pexpect/pexpect/tree/master/examples
+
+Expect Doc
+https://media.readthedocs.org/pdf/pexpect/latest/pexpect.pdf
+------
+Machine learning
+
+Javier Fuentes
+https://hortonworks.slack.com/messages/DFFHDRHU0
+
+-----
+Beeline
+beeline -u "jdbc:hive2://rbook2.openstacklocal:10000/default;principal=hive/rbook2.openstacklocal@HDP.COM"
+
+CREATE TABLE `my_drivers`(
+  `driver_id` int,
+  `name` string)
+STORED AS ORC
+LOCATION '/user/ajmal/mywarehouse/my_drivers'
+TBLPROPERTIES ("orc.compress"="SNAPPY");
+
+CREATE TABLE `default_drivers`(
+  `driver_id` int,
+  `name` string)
+STORED AS ORC
+TBLPROPERTIES ("orc.compress"="SNAPPY");
+
+CREATE EXTERNAL TABLE `external_drivers`(
+  `driver_id` int,
+  `name` string)
+STORED AS ORC
+LOCATION '/user/ajmal/mywarehouse/external_drivers'
+TBLPROPERTIES ("orc.compress"="SNAPPY");
+
+insert into default_drivers values (1, 'Default Driver');
+insert into my_drivers values (1, 'My Driver');
+insert into external_drivers values (1, 'External Driver');
+
+
+CREATE TABLE `managed_tab`(
+  `driver_id` int,
+  `name` string)
+STORED AS ORC
+TBLPROPERTIES ("orc.compress"="SNAPPY");
+
+CREATE EXTERNAL TABLE `external_tab`(
+  `driver_id` int,
+  `name` string)
+  ROW FORMAT DELIMITED
+  FIELDS TERMINATED BY ','
+  STORED AS TEXTFILE
+  LOCATION '/user/hive/drivers';
+  
+  -------
+  Apt-clone | Clone package in Ubuntu | Microsoft
+
+
+195  apt-cache pkgnames
+  196  apt-cache pkgnames | grep ambari
+  197  apt-cache showpkg ambari-agent
+  198  apt-clone
+  199  sudo apt install apt-clone
+  200  apt-clone clone ambari-agent
+  201  ls -al
+  202  ls
+  203  tar -ztvf ambari-agent.apt-clone.tar.gz
+  204  tar -zxvf ambari-agent.apt-clone.tar.gz
+  205  ls
+  206  cd etc/apt/sources.list
+  207  cd etc/apt/sources.list.d/
+  208  ls
+
+
+https://unix.stackexchange.com/questions/208047/how-do-i-transfer-installed-packages-and-settings-from-one-distro-to-another
+
+https://tecadmin.net/add-apt-repository-ubuntu/
+
+https://www.tecmint.com/useful-basic-commands-of-apt-get-and-apt-cache-for-package-management/
+-----
+PyFlame
+
+https://github.com/brendangregg/FlameGraph
+
+Installing PyFlame:
+https://pyflame.readthedocs.io/en/latest/installation.html
+
+ dpkg --list | grep gcc
+ sudo apt-add-repository ppa:trevorjay/pyflame
+ sudo apt-get update
+ sudo apt-get install pyflame
+
+
+Using PyFlame
+https://pyflame.readthedocs.io/en/latest/usage.html
+
+pyflame -s 300 -r 0.01 -p 19299 > pf_hn0.out
+
+
+git clone https://github.com/brendangregg/FlameGraph.git
+cd FlameGraph
+cat pf_hn0.out | ./flamegraph.pl > pf_hn0.svg
+
+-------
+Mac Tar Issue
+MAC tar issue
+
+._
+
+$ COPYFILE_DISABLE=1 tar -cf 2.tar file*    
+$ tar -tf 2.tar
+file1
+file2
+file3
+-------
+SSH KEY GEN
+
+Step by step from generating key to login:
+1. Generate the key with $ ssh-keygen -t rsa -b 2048 -v and when asked to enter file in which to save the key, type my-certificate and when asked to enter passphrase, press Enter (empty passphrase) and confirm by Enter.
+2. You will get two files generated, one will be my-certificate and one will be my-certificate.pub, rename the my-certificate to my-certificate.pem, so you will have two files, my-certificate.pub and my-certificate.pem
+3. Upload the public certificate to to server: ssh-copy-id -i ~/my-certificate.pub username@ip
+4. Make .pem file on your computer read-only sudo chmod 400 my-certificate.pem
+5. Login with $ sudo ssh -i /path/to/my-certificate.pem user@ip
+------
+Spark example
+Spark-shell example:
+
+Spark and Hive:
+
+[root@c1182-node2 ~]# cd /usr/hdp/current/spark2-client/
+[root@c1182-node2 spark2-client]# ./bin/spark-shell
+Using Scala version 2.11.8 (Java HotSpot(TM) 64-Bit Server VM, Java 1.8.0_112)
+Type in expressions to have them evaluated.
+Type :help for more information.
+
+scala>
+============
+
+import org.apache.spark.sql.hive.HiveContext
+val sqlContext = new HiveContext(sc)
+sqlContext.setConf("hive.exec.dynamic.partition.mode", "nonstrict")
+
+sqlContext.sql("CREATE TABLE temp_part2 (statecode STRING, countrycode STRING) PARTITIONED BY (ss_sold_date_sk int)")
+sqlContext.sql("CREATE TABLE temp_data2 (statecode STRING, countrycode STRING,ss_sold_date_sk int)")
+
+sqlContext.sql("insert into temp_data2 values ('a','b',1)")
+sqlContext.sql("insert into temp_data2 values ('x','y',2)")
+sqlContext.sql("insert into temp_data2 values ('p','q',null)")
+sqlContext.sql("select * from temp_data2").show()
+
+sqlContext.sql("INSERT INTO TABLE temp_part2 PARTITION (ss_sold_date_sk) select statecode,countrycode,ss_sold_date_sk from temp_data2")
+
+sqlContext.sql("select * from temp_part2 where ss_sold_date_sk > 0 ").show()
+-----
+FLASK Project
+MySQL Installation
+
+Temporary password: JplLr8Yg&90G
+For root@localhost
+
+It has been reset to blank:
+mysqladmin -u root -p   password ''
+Enter password: JplLr8Yg&90G
+
+(flaskenv) ayusuf@HW13786:~/python_virtualenv_home/web_project$ mysql -u root
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 479
+Server version: 5.7.21 MySQL Community Server (GPL)
+
+Copyright (c) 2000, 2018, Oracle and/or its affiliates. All rights reserved.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+mysql>
+
+
+Backup
+mysqldump -u root --databases runbook_db > dump.sql
+
+------
+
+
