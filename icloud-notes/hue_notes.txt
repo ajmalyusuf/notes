@@ -1,0 +1,102 @@
+ Migrate Hue Database : sqlite3 to mysql
+
+
+Install mysql database
+
+1. yum install mysql-server 
+2. /etc/init.d/mysqld start 
+3. mysqladmin -u root password hadoop (Skip this to avoid password for root)
+4. mysql -u root -p , then enter password 'hadoop' to login to mysql 
+5. create database user 'hue' , with password 'hue' : 
+
+Configuring Hue to store data in MySQL 
+
+1. Create a new user in MySQL, and grant privileges to it to manage the database using the MySQL database admin utility. 
+
+# mysql -u root -p 
+
+CREATE USER 'hue'@'localhost' IDENTIFIED BY 'hue'; 
+GRANT ALL PRIVILEGES ON *.* TO 'hue'@'localhost'; 
+— CREATE USER 'hue'@'%' IDENTIFIED BY 'hive'; 
+GRANT ALL PRIVILEGES ON *.* TO 'hue'@'%'; 
+FLUSH PRIVILEGES; 
+GRANT ALL PRIVILEGES ON *.* TO 'hue'@'localhost' WITH GRANT OPTION; 
+GRANT ALL PRIVILEGES ON *.* TO 'hue'@'%' WITH GRANT OPTION; 
+FLUSH PRIVILEGES; 
+
+
+2. Create the MySQL database for Hue. 
+
+# mysql -u root -p 
+CREATE DATABASE huedb; 
+
+3. Stop Hue if it is running. 
+
+/etc/init.d/hue stop 
+
+4. To migrate your existing data to MySQL, use the following command to dump the existing database data to a text file. Note that using the “.json” extension is required. 
+
+/usr/lib/hue/build/env/bin/hue dumpdata > /tmp/hue_db_dump.json 
+
+5. Open the /etc/hue/conf/hue.ini file and edit the [[database]] section (modify for your MySQL setup). 
+
+[[database]] 
+engine=mysql 
+host=$DATABASEIPADDRESSORHOSTNAME 
+port=$PORT 
+user=$HUEUSER 
+password=$HUEPASSWORD 
+name=$DBNAME 
+
+6. As the Hue user, configure Hue to load the existing data and create the necessary database tables. 
+
+/usr/lib/hue/build/env/bin/hue syncdb --noinput 
+/usr/lib/hue/build/env/bin/hue migrate 
+/usr/lib/hue/build/env/bin/hue loaddata /tmp/hue_db_dump.json 
+
+See below for ERROR and FIX
+
+7. Your system is now configured and you can start the Hue server as normal. 
+
+/etc/init.d/hue start 
+
+
+Error and Fix
+==========
+
+ERROR:
+————
+# /usr/lib/hue/build/env/bin/hue loaddata /tmp/hue_db_dump.json
+Installing json fixture '/tmp/hue_db_dump' from '/tmp/hue_db_dump'.
+Problem installing fixture '/tmp/hue_db_dump.json': Traceback (most recent call last):
+  File "/usr/lib/hue/build/env/lib/python2.6/site-packages/Django-1.2.3-py2.6.egg/django/core/management/commands/loaddata.py", line 172, in handle
+    obj.save(using=using)
+  File "/usr/lib/hue/build/env/lib/python2.6/site-packages/Django-1.2.3-py2.6.egg/django/core/serializers/base.py", line 165, in save
+    models.Model.save_base(self.object, using=using, raw=True)
+  File "/usr/lib/hue/build/env/lib/python2.6/site-packages/Django-1.2.3-py2.6.egg/django/db/models/base.py", line 500, in save_base
+    rows = manager.using(using).filter(pk=pk_val)._update(values)
+  File "/usr/lib/hue/build/env/lib/python2.6/site-packages/Django-1.2.3-py2.6.egg/django/db/models/query.py", line 491, in _update
+    return query.get_compiler(self.db).execute_sql(None)
+  File "/usr/lib/hue/build/env/lib/python2.6/site-packages/Django-1.2.3-py2.6.egg/django/db/models/sql/compiler.py", line 861, in execute_sql
+    cursor = super(SQLUpdateCompiler, self).execute_sql(result_type)
+  File "/usr/lib/hue/build/env/lib/python2.6/site-packages/Django-1.2.3-py2.6.egg/django/db/models/sql/compiler.py", line 727, in execute_sql
+    cursor.execute(sql, params)
+  File "/usr/lib/hue/build/env/lib/python2.6/site-packages/Django-1.2.3-py2.6.egg/django/db/backends/util.py", line 15, in execute
+    return self.cursor.execute(sql, params)
+  File "/usr/lib/hue/build/env/lib/python2.6/site-packages/Django-1.2.3-py2.6.egg/django/db/backends/mysql/base.py", line 86, in execute
+    return self.cursor.execute(query, args)
+  File "/usr/lib/hue/build/env/lib/python2.6/site-packages/MySQL_python-1.2.3c1-py2.6-linux-x86_64.egg/MySQLdb/cursors.py", line 173, in execute
+    self.errorhandler(self, exc, value)
+  File "/usr/lib/hue/build/env/lib/python2.6/site-packages/MySQL_python-1.2.3c1-py2.6-linux-x86_64.egg/MySQLdb/connections.py", line 36, in defaulterrorhandler
+    raise errorclass, errorvalue
+IntegrityError: (1062, "Duplicate entry 'oozie-bundle' for key 'app_label'")
+
+FIX / Solution:
+———————
+Run the below delete command from mysql:
+
+mysql> DELETE FROM hue.django_content_type;
+
+and then rerun the loaddata command:
+
+# /usr/lib/hue/build/env/bin/hue loaddata /tmp/hue_db_dump.json
