@@ -1,0 +1,169 @@
+Hive File Format Examples
+
+Text Table:
+
+    CREATE TABLE TwitterTextTable(
+        tweetId BIGINT, username STRING,
+        txt STRING, CreatedAt STRING,
+        profileLocation STRING,
+        favc BIGINT,retweet STRING,retcount BIGINT,followerscount BIGINT)
+    COMMENT 'This is the Twitter streaming data'
+    ROW FORMAT DELIMITED
+    FIELDS TERMINATED BY '\t'
+    STORED AS TEXTFILE;
+    LOAD  DATA  INPATH  '/tmp/Twitterdata.txt' OVERWRITE INTO TABLE TwitterTextTable;
+
+SELECT * FROM TwitterTextTable LIMIT 100;
+
+RC Table:
+
+    CREATE TABLE TwitterRCTable(
+        tweetId BIGINT, username STRING,
+        txt STRING, CreatedAt STRING,
+        profileLocation STRING COMMENT 'Location of user',
+        favc BIGINT,retweet STRING,retcount BIGINT,followerscount BIGINT)
+    COMMENT 'This is the Twitter streaming data'
+    ROW FORMAT DELIMITED
+    FIELDS TERMINATED BY '\t'
+    STORED AS RCFILE;
+
+INSERT OVERWRITE TABLE TwitterRCTable select * from  TwitterTextTable;
+
+    SELECT profileLocation, COUNT(txt) as count1 
+    FROM TwitterRCTable 
+    GROUP BY profileLocation 
+    ORDER BY count1 desc limit 10;
+
+SELECT * FROM TwitterRCTable LIMIT 100;
+
+Managed Table:
+
+    CREATE TABLE ManagedTextTable(
+        tweetId BIGINT, username STRING,
+        txt STRING, CreatedAt STRING,
+        profileLocation STRING,
+        favc BIGINT,retweet STRING,retcount BIGINT,followerscount BIGINT)
+    COMMENT 'This is the Twitter streaming data'
+    ROW FORMAT DELIMITED
+    FIELDS TERMINATED BY '\t'
+    STORED AS TEXTFILE;
+
+External Table:
+
+    CREATE EXTERNAL TABLE IF NOT EXISTS ExternalTextTable(
+        tweetId BIGINT, username STRING,
+        txt STRING, CreatedAt STRING,
+        profileLocation STRING,
+        favc BIGINT,retweet STRING,retcount BIGINT,followerscount BIGINT)
+    COMMENT 'This is the Twitter streaming data'
+    ROW FORMAT DELIMITED
+    FIELDS TERMINATED BY '\t'
+    STORED AS TEXTFILE
+    location '/user/ajmal/hive_external_tables';
+
+SELECT * FROM ExternalTextTable LIMIT 100;
+
+    SELECT profileLocation, COUNT(txt) as count1 
+    FROM ExternalTextTable 
+    GROUP BY profileLocation 
+    ORDER BY count1 desc limit 10;
+
+describe formatted ManagedTextTable;
+
+describe formatted ExternalTextTable;
+
+ORC Table:
+
+    CREATE TABLE ORCTable(
+        tweetId BIGINT, username STRING,
+        txt STRING, CreatedAt STRING,
+        profileLocation STRING COMMENT 'Location of user',
+        favc INT,retweet STRING,retcount INT,followerscount INT)
+    COMMENT 'This is the Twitter streaming data'
+    ROW FORMAT DELIMITED
+    FIELDS TERMINATED BY '\t'
+    STORED AS ORC tblproperties ("orc.compress"="ZLIB");
+
+INSERT OVERWRITE TABLE ORCTable select * from  TwitterTextTable;
+
+Partitioned Table:
+
+    CREATE TABLE PartitionedTable(
+      tweetId BIGINT, username STRING, txt STRING,favc BIGINT,retweet STRING,
+      retcount BIGINT,followerscount BIGINT) 
+    COMMENT 'This is the Twitter streaming data' 
+    PARTITIONED BY(CreatedAt STRING, profileLocation STRING) 
+    ROW FORMAT DELIMITED FIELDS 
+    TERMINATED BY '\t' STORED AS TEXTFILE;
+
+    CREATE TABLE PartTable(
+      tweetId BIGINT, username STRING, txt STRING,favc BIGINT,retweet STRING,
+      retcount BIGINT,followerscount BIGINT) 
+    COMMENT 'This is the Twitter streaming data' 
+    PARTITIONED BY(CreatedAt STRING, profileLocation STRING) 
+    ROW FORMAT DELIMITED FIELDS 
+    TERMINATED BY '\t' STORED AS ORC;
+
+    INSERT OVERWRITE TABLE PartitionedTable 
+    PARTITION (CreatedAt="26 04:50:56 UTC 2014",profileLocation="Chicago") 
+    SELECT tweetId,username,txt,favc,retweet,retcount,followerscount 
+    FROM TwitterTextTable
+    where profileLocation='Chicago';
+
+    INSERT OVERWRITE TABLE PartitionedTable 
+    PARTITION (CreatedAt="26 04:50:15 UTC 2014",profileLocation="Bay Area, CA") 
+    SELECT tweetId,username,txt,favc,retweet,retcount,followerscount 
+    FROM TwitterTextTable
+    where profileLocation='Bay Area, CA';
+
+
+SELECT * FROM partitionedtable LIMIT 100;
+
+select count(*) from partitionedtable;
+
+    CREATE TABLE BucketedTable(
+        tweetId BIGINT, username STRING,
+        txt STRING,CreatedAt STRING,favc BIGINT,retweet STRING,retcount BIGINT, followerscount BIGINT)
+    COMMENT 'This is the Twitter streaming data'
+    PARTITIONED BY( profileLocation STRING)
+    CLUSTERED BY(tweetId) INTO 2 BUCKETS
+    ROW FORMAT DELIMITED
+    FIELDS TERMINATED BY '\t'
+    STORED AS ORC tblproperties ("orc.compress"="ZLIB");
+
+SELECT * FROM BucketedTable LIMIT 100;
+
+
+    set hive.enforce.bucketing = true; 
+    INSERT OVERWRITE TABLE BucketedTable PARTITION (profileLocation="Chicago")    
+    SELECT tweetId,username,txt,CreatedAt,favc,retweet,retcount,followerscount       
+    FROM TwitterTextTable
+    where profileLocation='Chicago' limit 100;
+
+
+Some Commands:
+
+analyze table orctable compute statistics;
+
+msck repair table orctable;
+
+describe formatted employee_subdir_text;
+
+
+SET hive.mapred.supports.subdirectories=TRUE;
+SET mapred.input.dir.recursive=TRUE;
+SET hive.input.dir.recursive=true;
+
+
+Error: 1
+msck repair table subdir_table2;
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask
+
+This is when you are trying to run MSCK on a table with sub directories and NOT having Partitions
+
+- If table has partitions, MSCK should be run by hive-user same as the HDFS table directory owner.
+- If not, you will get :
+OK
+Partitions not in metastore:    mm_cltv_scan_30apr_13_14_pre:1  mm_cltv_scan_30apr_13_14_pre:2
+Time taken: 1.061 seconds, Fetched: 1 row(s)
+
