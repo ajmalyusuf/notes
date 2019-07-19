@@ -1,0 +1,34 @@
+
+
+ldapsearch examples
+
+updated by pdamore (Sep 08, 2015)
+
+These examples are using AD-specific attributes since this is the most common directory we see.  Similar searches will work against other directories with minor changes.  For example change sAMAccountName to uid for directories other than AD.
+Note that all authenticated binds below use the -W switch which will prompt for the bind password.
+ 
+Unauthenticated bind to search for users with login name (sAMAccountName) of ltester
+ldapsearch -x -h 10.10.10.40 -b 'dc=test,dc=local' -s sub '(sAMAccountName=ltester)'
+Unauthenticated bind to return all users under dc=test,dc=local
+ldapsearch -x -h 10.10.10.40 -b 'dc=test,dc=local' -s sub '(objectclass=person)'
+Authenticated bind to search for users with login name (sAMAccountName) of ltester
+ldapsearch -x -h 10.10.10.40 -b 'dc=test,dc=local' -s sub -D 'CN=Ambari Server,OU=Hadoop Users,DC=test,DC=local' -W '(sAMAccountName=ltester)'
+Authenticated bind to search for users with login name (sAMAccountName) of ambari
+ldapsearch -x -h 10.10.10.40 -b 'dc=test,dc=local' -s sub -D 'CN=Ambari Server,OU=Hadoop Users,DC=test,DC=local' -W '(sAMAccountName=ambari)'
+Authenticated bind to search for users with login name (sAMAccountName) of ambari.  This command uses a special AD-specific form of the bind DN which allows use of the users's userPrincipalName attribute as the DN (in this case, ambari@test.local)
+ldapsearch -x -h 10.10.10.40 -b 'dc=test,dc=local' -s sub -D 'ambari@test.local' -W '(sAMAccountName=ambari)'
+Authenticated bind to search for a group called testgroup
+ldapsearch -x -h 10.10.10.40 -b 'dc=test,dc=local' -s sub -D 'CN=Ambari Server,OU=Hadoop Users,DC=test,DC=local' -W '(&(objectclass=group)(CN=testgroup))'
+Authenticated bind to search for users which are a member of a group called 'CN=testgroup,OU=Groups,DC=test,DC=local'
+ldapsearch -x -h 10.10.10.40 -b 'dc=test,dc=local' -s sub -D 'CN=Ambari Server,OU=Hadoop Users,DC=test,DC=local' -W '(memberof=CN=testgroup,OU=Groups,DC=test,DC=local)'
+This search WILL NOT WORK!  You can't use wildcards with member or memberof
+ldapsearch -x -h 10.10.10.40 -b 'dc=test,dc=local' -s sub -D 'CN=Ambari Server,OU=Hadoop Users,DC=test,DC=local' -W '(memberof=CN=testg*)'
+Authenticated bind to search for a group called testgroup, and only return member and objectclass attributes - this can be used for objects with a lot of data to make reading the output easier
+ldapsearch -x -h 10.10.10.40 -b 'dc=test,dc=local' -s sub -D 'CN=Ambari Server,OU=Hadoop Users,DC=test,DC=local' -W '(&(objectclass=group)(CN=testgroup))' member objectclass
+Authenticated bind to search for any group which has a CN starting with 'test' and return the member attribute of these groups
+ldapsearch -x -h 10.10.10.40 -b 'dc=test,dc=local' -s sub -D 'CN=Ambari Server,OU=Hadoop Users,DC=test,DC=local' -W '(&(objectclass=group)(CN=test*))' member
+ 
+Root DSE Query - Authenticated bind to return the entire Root DSE
+ldapsearch -x -h 10.10.10.40 -b '' -s base -D 'CN=Ambari Server,OU=Hadoop Users,DC=test,DC=local' -W
+Root DSE Query - Authenticated bind to return only the namingContexts attribute of the Root DSE, useful when you want to search a directory you know nothing about and need ideas for a search base
+ldapsearch -x -h 10.10.10.40 -b '' -s base -D 'CN=Ambari Server,OU=Hadoop Users,DC=test,DC=local' -W namingContexts
